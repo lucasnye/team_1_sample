@@ -1,14 +1,14 @@
 # virtuals_acp/__init__.py
 
-from .client import VirtualsACP
-from .contract_manager import _ACPContractManager # Usually not public, but if needed for advanced use
 from .models import (
-    ACPAgent,
+    IACPAgent,
     ACPJobPhase,
     MemoType,
-    ACPOffering,
-    ACPJob,
-    ACPMemo
+    IACPJob,
+    IACPMemo,
+    IMemo,
+    IJob,
+    JobResult
 )
 from .configs import (
     ACPContractConfig,
@@ -22,16 +22,19 @@ from .exceptions import (
     ACPContractError,
     TransactionFailedError
 )
-from .abi import ACP_ABI, ERC20_ABI # Export ABI if users might need it directly
+from .memo import AcpMemo
+from .job import AcpJob
+from .client import VirtualsACP
+from .abi import ACP_ABI, ERC20_ABI
 
 __all__ = [
     "VirtualsACP",
-    "ACPAgent",
+    "IACPAgent",
     "ACPJobPhase",
     "MemoType",
-    "ACPOffering",
-    "ACPJob",
-    "ACPMemo",
+    "IACPOffering",
+    "IACPJob",
+    "IACPMemo",
     "ACPContractConfig",
     "BASE_SEPOLIA_CONFIG",
     "BASE_MAINNET_CONFIG",
@@ -41,7 +44,12 @@ __all__ = [
     "ACPContractError",
     "TransactionFailedError",
     "ACP_ABI",
-    "ERC20_ABI"
+    "ERC20_ABI",
+    "IMemo",
+    "IJob",
+    "JobResult",
+    "AcpJob",
+    "AcpMemo"
 ]
 
-__version__ = "0.1.0" # Define your package version here
+__version__ = "0.1.0"

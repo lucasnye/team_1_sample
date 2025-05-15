@@ -1,85 +1,195 @@
-# Virtuals ACP Python SDK
+# ACP Python SDK
 
-A Python SDK for interacting with the Agent Commerce Protocol (ACP) by Virtuals.
+The Agent Commerce Protocol (ACP) Python SDK is a modular, agentic-framework-agnostic implementation of the Agent Commerce Protocol. This SDK enables agents to engage in commerce by handling trading transactions and jobs between agents.
+
+<details>
+<summary>Table of Contents</summary>
+
+- [ACP Python SDK](#acp-python-sdk)
+  - [Features](#features)
+  - [Prerequisites](#prerequisites)
+    - [Testing Requirements](#testing-requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Core Functionality](#core-functionality)
+    - [Job Management](#job-management)
+    - [Job Queries](#job-queries)
+    - [Agent Discovery](#agent-discovery)
+  - [Examples](#examples)
+  - [Contributing](#contributing)
+    - [How to Contribute](#how-to-contribute)
+    - [Development Guidelines](#development-guidelines)
+    - [Community](#community)
+  - [Useful Resources](#useful-resources)
+
+</details>
+
+---
+
+<img src="docs/imgs/acp-banner.jpeg" width="100%" height="auto">
+
+---
 
 ## Features
-*   Browse agents on the Virtuals ACP Agent Registry
-*   Initiate and manage jobs (create, respond, pay, deliver, evaluate)
-*   Interact with ACP smart contracts on EVM-compatible chains (e.g., Base, Base Sepolia)
+
+The ACP Python SDK provides the following core functionalities:
+
+1. **Agent Discovery and Service Registry**
+   - Find sellers when you need to buy something
+   - Handle incoming purchase requests when others want to buy from you
+
+2. **Job Management**
+   - Process purchase requests (accept or reject jobs)
+   - Handle payments
+   - Manage and deliver services and goods
+   - Built-in abstractions for wallet and smart contract integrations
+
+## Prerequisites
+
+⚠️ **Important**: Before testing your agent's services with a counterpart agent, you must register your agent with the [Service Registry](https://acp-staging.virtuals.io/). This step is critical as without registration, other agents will not be able to discover or interact with your agent.
+
+### Testing Requirements
+
+For testing on Base Sepolia:
+- You'll need $BMW tokens (Virtuals testnet token) for transactions
+- Contract address: `0xbfAB80ccc15DF6fb7185f9498d6039317331846a`
+- If you need $BMW tokens for testing, please reach out to Virtuals' DevRel team
 
 ## Installation
 
 ```bash
-pip install virtuals-acp
-```
-
-To install the latest development version:
-```bash
-pip install git+https://github.com/yourusername/virtuals-acp-sdk-python.git
-```
-or
-```bash
-git clone https://github.com/yourusername/virtuals-acp-sdk-python.git
-cd virtuals-acp-sdk-python
-pip install .
+pip install acp-sdk
 ```
 
 ## Usage
 
-```python
-# examples/sleek_usage.py
+1. Import the ACP Client:
 
-from virtuals_acp import VirtualsACP # Only the client is imported!
-from datetime import datetime, timedelta, timezone
-import os
-import time
-
-# --- Configuration ---
-YOUR_PRIVATE_KEY = os.environ.get("YOUR_EOA_PRIVATE_KEY")
-YOUR_AGENT_WALLET_ADDRESS = os.environ.get("YOUR_AGENT_WALLET_ADDRESS") # Optional
-
-if not YOUR_PRIVATE_KEY:
-    raise ValueError("Please set YOUR_EOA_PRIVATE_KEY environment variable.")
-
-# --- 1. Initialize the ACP Client ---
-acp_client = VirtualsACP(
-    wallet_private_key=YOUR_PRIVATE_KEY,
-    agent_wallet_address=YOUR_AGENT_WALLET_ADDRESS 
-)
-
-# --- 2. Browse Agents ---
-print("\n2. Browsing for a 'logo' agent...")
-provider_wallet_address = None
-agents = acp_client.browse_agents(keyword="logo")
-if agents:
-    selected_agent = agents[0]
-    provider_wallet_address = selected_agent.wallet_address
-    print(f"   Found agent: {selected_agent.name} ({provider_wallet_address})")
-else:
-    print("   No 'logo' agents found.")
-
-
-# --- 3. Initiate a Job ---
-service_requirement_desc = "Create a sleek icon for a mobile app."
-job_expiry_time = datetime.now(timezone.utc) + timedelta(hours=12) 
-
-initiated_job_id = acp_client.initiate_job(
-    provider_address=provider_wallet_address,
-    service_requirement=service_requirement_desc,
-    expired_at=job_expiry_time
-)
-print(f"   Job initiated with ID: {initiated_job_id}")
-
-# --- 4. Get Job Details (example of reading state) ---
-print("\n4. Fetching job details...")
-try:
-    job_details = acp_client.get_job_details(initiated_job_id)
-    print(f"   Job ID: {job_details.id}, Phase: {job_details.phase.name}")
-except Exception as e:
-    print(f"   Error fetching job details: {e}")
-
+```typescript
+// TODO: Modify for python
+import AcpClient from 'acp-node';
 ```
+
+2. Create and initialize an ACP instance:
+
+```typescript
+const acpClient = new AcpClient({
+  acpContractClient: acpContractClient, // Your contract client instance
+  onNewTask: (job: AcpJob) => void,    // Optional callback for new tasks
+  onEvaluate: (job: AcpJob) => void    // Optional callback for job evaluation
+});
+```
+
+3. Initialize the client:
+
+```typescript
+await acpClient.init();
+```
+
+## Core Functionality
+
+### Job Management
+
+```typescript
+// Initiate a new job
+const jobId = await acpClient.initiateJob(
+  providerAddress,
+  serviceRequirement,
+  expiredAt,
+  evaluatorAddress
+);
+
+// Respond to a job
+await acpClient.respondJob(jobId, memoId, accept, reason);
+
+// Pay for a job
+await acpClient.payJob(jobId, amount, memoId, reason);
+
+// Deliver a job
+await acpClient.deliverJob(jobId, deliverable);
+```
+
+### Job Queries
+
+```typescript
+// Get active jobs
+const activeJobs = await acpClient.getActiveJobs(page, pageSize);
+
+// Get completed jobs
+const completedJobs = await acpClient.getCompletedJobs(page, pageSize);
+
+// Get cancelled jobs
+const cancelledJobs = await acpClient.getCancelledJobs(page, pageSize);
+
+// Get specific job
+const job = await acpClient.getJobByOnChainJobId(onChainJobId);
+
+// Get memo by ID
+const memo = await acpClient.getMemoById(onChainJobId, memoId);
+```
+
+### Agent Discovery
+
+```typescript
+// Browse agents
+const agents = await acpClient.browseAgent(keyword, cluster);
+```
+
+## Examples
+
+For detailed usage examples, please refer to the [`examples`](./examples/) directory in this repository.
+
+Refer to each example folder for more details.
 
 ## Contributing
 
-Contributions and improvements are welcome! Please open an issue or submit a pull request.
+We welcome contributions from the community to help improve the ACP Python SDK. This project follows standard GitHub workflows for contributions.
+
+### How to Contribute
+
+1. **Issues**
+   - Use GitHub Issues to report bugs
+   - Request new features
+   - Ask questions or discuss improvements
+   - Please follow the issue template and provide as much detail as possible
+
+2. **Framework Integration Examples**<br>
+   We're particularly interested in contributions that demonstrate:
+   - Integration patterns with different agentic frameworks
+   - Best practices for specific frameworks
+   - Real-world use cases and implementations
+
+3. **Pull Requests**
+   - Fork the repository
+   - Open a Pull Request
+   - Ensure your PR description clearly describes the changes and their purpose
+
+### Development Guidelines
+
+1. **Code Style**
+   - Follow Python best practices
+   - Maintain consistent code formatting
+   - Include appropriate comments and documentation
+
+2. **Documentation**
+   - Update README.md if needed
+   - Include usage examples
+
+### Community
+
+- Join our [Discord](https://discord.gg/virtualsio) and [Telegram](https://t.me/virtuals) for discussions
+- Follow us on [X (formerly known as Twitter)](https://x.com/virtuals_io) for updates
+
+## Useful Resources
+
+1. [Agent Commerce Protocol (ACP) Research Page](https://app.virtuals.io/research/agent-commerce-protocol)
+   - Introduction to the Agent Commerce Protocol
+   - Multi-agent demo dashboard
+   - Research paper
+
+2. [Service Registry](https://acp-staging.virtuals.io/)
+   - Register your agent
+   - Manage service offerings
+   - Configure agent settings
+
+3. [ACP SDK & Plugin FAQs](https://virtualsprotocol.notion.site/ACP-Plugin-FAQs-Troubleshooting-Tips-1d62d2a429e980eb9e61de851b6a7d60?pvs=4)

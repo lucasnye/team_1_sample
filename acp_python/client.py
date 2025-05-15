@@ -9,13 +9,13 @@ import time
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple, Union, Dict, Any
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from web3.middleware.geth_poa import geth_poa_middleware
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 import socketio
 import socketio.client
 
-from .job import AcpJob
+from utils.job_helpers import build_acp_job
 from .memo import AcpMemo
 from .models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
 
@@ -73,41 +73,14 @@ class VirtualsACP:
         @self.sio.on('onEvaluate')
         def handle_evaluate(data):
             if self.on_evaluate:
-                job = AcpJob(
-                    id=data['onChainJobId'],
-                    client_address=data['clientAddress'],
-                    provider_address=data['sellerAddress'],
-                    memos=[
-                        AcpMemo(
-                            acp_client=self,
-                            id=memo['memoId'],
-                            type=MemoType(memo['memoType']),
-                            content=memo['content'],
-                            next_phase=ACPJobPhase(memo['nextPhase'])
-                        ) for memo in data['memos']
-                    ],
-                    phase=ACPJobPhase(data['phase'])
-                )
+                job = build_acp_job(self, data)
                 self.on_evaluate(job)
 
         @self.sio.on('onNewTask')
         def handle_new_task(data):
             print("on_new_task", data)
             if self.on_new_task:
-                job = AcpJob(
-                    id=data['onChainJobId'],
-                    provider_address=data['sellerAddress'],
-                    memos=[
-                        AcpMemo(
-                            acp_client=self,
-                            id=memo['memoId'],
-                            type=MemoType(memo['memoType']),
-                            content=memo['content'],
-                            next_phase=ACPJobPhase(memo['nextPhase'])
-                        ) for memo in data['memos']
-                    ],
-                    phase=ACPJobPhase(data['phase'])
-                )
+                job = build_acp_job(data)
                 self.on_new_task(job)
 
     def _connect_socket(self) -> None:

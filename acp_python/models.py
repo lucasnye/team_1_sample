@@ -74,7 +74,6 @@ class IACPAgent:
     virtual_agent_id: Optional[str] = None
 
 
-@dataclass
 class IMemo(TypedDict):
     content: str
     memoType: MemoType
@@ -84,7 +83,6 @@ class IMemo(TypedDict):
     numApprovals: int
     sender: str
     
-@dataclass
 class IJob(TypedDict):
     id: int
     client: str

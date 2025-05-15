@@ -1,54 +1,23 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "virtuals-acp"
-version = "0.1.0"  # Match __version__ in virtuals_acp/__init__.py
-authors = [
-    { name = "Your Name/Company", email = "your.email@example.com" },
-]
-description = "A Python SDK for the Agent Commerce Protocol (ACP) by Virtuals."
+[tool.poetry]
+name = "acp-python"
+version = "0.1.0"
+description = "ACP Plugin for Python SDK for GAME by Virtuals"
+authors = ["Steven Lee Soon Fatt <steven@virtuals.io>"]
 readme = "README.md"
-requires-python = ">=3.8" # Specify your minimum supported Python version
-license = { file = "LICENSE" }
-keywords = ["virtuals", "acp", "agent commerce protocol", "blockchain", "sdk"]
-classifiers = [
-    "Development Status :: 3 - Alpha", # Or "4 - Beta", "5 - Production/Stable"
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License", # Change if you use a different license
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Operating System :: OS Independent",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-]
 
-dependencies = [
-    "requests>=2.25.0,<3.0.0",
-    "web3>=6.0.0,<7.0.0", # Check latest compatible web3 version
-    # "pydantic>=1.8,<2.0" # If you decide to use Pydantic for models
-]
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+web3 = "^6.0.0"
+aiohttp = "^3.11.14"
+eth-account = "^0.13.6"
+eth-typing = "^5.2.0"
+eth-utils = "^5.2.0"
+requests = "^2.32.3"
+pydantic = "^2.10.6"
+python-socketio = "^5.11.1"
+websocket-client = "^1.7.0"
+jsonschema = "^4.22.0"
 
-[project.urls]
-Homepage = "https://github.com/yourusername/virtuals-acp-sdk-python" # Replace
-Repository = "https://github.com/yourusername/virtuals-acp-sdk-python" # Replace
-# "Bug Tracker" = "https://github.com/yourusername/virtuals-acp-sdk-python/issues" # Replace
-
-# Optional: if you have command-line scripts
-# [project.scripts]
-# acp-cli = "virtuals_acp.cli:main"
-
-# Optional: for development dependencies (like pytest, black, flake8)
-# [project.optional-dependencies]
-# dev = [
-#     "pytest>=7.0.0",
-#     "pytest-cov",
-#     "flake8",
-#     "black",
-#     "mypy",
-#     "tox"
-# ]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

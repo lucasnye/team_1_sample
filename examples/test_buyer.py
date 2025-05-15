@@ -4,12 +4,14 @@ import sys
 import os
 import time
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from virtuals_acp.client import VirtualsACP
-from virtuals_acp.models import ACPJobPhase
-from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
-from virtuals_acp import AcpJob
+from acp_python.client import VirtualsACP
+from acp_python.models import ACPJobPhase
+from acp_python.job import AcpJob
+from acp_python.configs import BASE_SEPOLIA_CONFIG
+
+
 def test_buyer():
     def on_new_task(job: AcpJob, callback: Callable):
         if job.phase == ACPJobPhase.NEGOTIATION:

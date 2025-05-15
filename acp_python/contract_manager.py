@@ -6,6 +6,10 @@ from datetime import datetime
 import traceback
 from typing import Optional, Tuple
 
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+
 from eth_account import Account
 import requests
 from web3 import Web3
@@ -13,10 +17,10 @@ import web3
 from web3.contract import Contract
 from eth_account.signers.local import LocalAccount
 
-from .abi import ACP_ABI, ERC20_ABI
-from .configs import ACPContractConfig
-from .models import ACPJobPhase, MemoType, ACPJob, IMemo # ACPMemo might be useful here too
-from .exceptions import ACPContractError, TransactionFailedError
+from abi import ACP_ABI, ERC20_ABI
+from configs import ACPContractConfig
+from models import ACPJobPhase, MemoType, IACPJob, IMemo # ACPMemo might be useful here too
+from exceptions import ACPContractError, TransactionFailedError
 from eth_account.messages import encode_defunct
 
 
@@ -222,12 +226,12 @@ class _ACPContractManager:
         except Exception as error:
             raise Exception(f"{error}")
 
-    def get_job_details(self, job_id: int) -> ACPJob:
+    def get_job_details(self, job_id: int) -> IACPJob:
         try:
             # Call structure: (id, client, provider, budget, amountClaimed, phase, memoCount, expiredAt, evaluator)
             job_data_tuple = self.contract.functions.jobs(job_id).call()
             
-            return ACPJob(
+            return IACPJob(
                 id=job_data_tuple[0],
                 client_address=job_data_tuple[1],
                 provider_address=job_data_tuple[2],

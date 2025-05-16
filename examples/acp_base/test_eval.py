@@ -1,15 +1,13 @@
-from collections.abc import Callable
 import sys
 import os
 import time
 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from acp_python.utils.job_actions import evaluate_job
-from acp_python.client import VirtualsACP
-from acp_python.models import ACPJobPhase, IACPJob
-from acp_python.configs import BASE_SEPOLIA_CONFIG
-from acp_python import AcpJob
+from acp_sdk.utils.job_actions import evaluate_job
+from acp_sdk.client import VirtualsACP
+from acp_sdk.models import ACPJobPhase, IACPJob
+from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 
 def evaluator():
     def on_evaluate(job: IACPJob):
@@ -24,8 +22,8 @@ def evaluator():
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
-        wallet_private_key="xxx",
-        agent_wallet_address="xxx",
+        wallet_private_key=os.environ.get("ACP_TOKEN_EVAL"),
+        agent_wallet_address=os.environ.get("ACP_AGENT_WALLET_ADDRESS_EVAL"),
         config=BASE_SEPOLIA_CONFIG,
         on_evaluate=on_evaluate
     )

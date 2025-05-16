@@ -6,10 +6,10 @@ import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from acp_python.client import VirtualsACP
-from acp_python.models import ACPJobPhase, IACPJob
-from acp_python.configs import BASE_SEPOLIA_CONFIG
-from acp_python.utils.job_actions import respond_job, deliver_job
+from acp_sdk.client import VirtualsACP
+from acp_sdk.models import ACPJobPhase, IACPJob
+from acp_sdk.configs import BASE_SEPOLIA_CONFIG
+from acp_sdk.utils.job_actions import respond_job, deliver_job
 
 def seller():
     def on_new_task(job: IACPJob):
@@ -42,8 +42,8 @@ def seller():
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
-        wallet_private_key="xxx",
-        agent_wallet_address="xxx",
+        wallet_private_key=os.environ.get("ACP_TOKEN_SELLER"),
+        agent_wallet_address=os.environ.get("ACP_AGENT_WALLET_ADDRESS_SELLER"),
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task
     )

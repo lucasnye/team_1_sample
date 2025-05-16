@@ -47,9 +47,9 @@ class _ACPContractManager:
     
     def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> Tuple[dict, str]:
         if contract_address:
-            encoded_data = self.token_contract.encode_abi(method_name, args=args)
+            encoded_data = self.token_contract.encodeABI(method_name, args=args)
         else:
-            encoded_data = self.contract.encode_abi(method_name, args=args)
+            encoded_data = self.contract.encodeABI(method_name, args=args)
         
         trx_data = {
             "target": contract_address if contract_address else self.config.contract_address,
@@ -62,7 +62,7 @@ class _ACPContractManager:
         
         # Sign the transaction
         message = encode_defunct(message_bytes)
-        signature =  self.account.sign_message(message).signature.hex()
+        signature = "0x" + self.account.sign_message(message).signature.hex()
         return trx_data, signature
 
     def create_job(

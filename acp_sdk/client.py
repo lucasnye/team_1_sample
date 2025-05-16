@@ -129,7 +129,7 @@ class VirtualsACP:
     
 
     def browse_agents(self, keyword: str, cluster: Optional[str] = None) -> List[IACPAgent]:
-        url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$neq]={self.agent_address}"
+        url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$notIn]={self.agent_address}"
         if cluster:
             url += f"&filters[cluster]={cluster}"
             

@@ -3,28 +3,29 @@ import sys
 import os
 import time
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from virtuals_acp.client import VirtualsACP
-from virtuals_acp.models import ACPJobPhase
-from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
-from virtuals_acp import AcpJob
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from acp_python.utils.job_actions import evaluate_job
+from acp_python.client import VirtualsACP
+from acp_python.models import ACPJobPhase, IACPJob
+from acp_python.configs import BASE_SEPOLIA_CONFIG
+from acp_python import AcpJob
 
 def evaluator():
-    def on_evaluate(job: AcpJob, callback: Callable):
-        print("Evaluation function called", job)
+    def on_evaluate(job: IACPJob):
+        print("Evaluation function called", job.memos)
         # Find the deliverable memo
         for memo in job.memos:
-            if memo.next_phase == ACPJobPhase.COMPLETED:
+            next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
+            if next_phase == ACPJobPhase.COMPLETED:
                 # Evaluate the deliverable by accepting it
-                acp_client.evaluate_job_delivery(memo.id, True)
-                callback(True)
+                evaluate_job(acp_client, job.memos, True)
                 break
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
-        wallet_private_key="60e3438e1cd3b3ca6afa310e3350a59fa8a51ba42266c1281dee237b8ec264f2",
-        agent_wallet_address="0x9cb1497E8192FDCc60c4dC6D3B01F40D9215ad50",
+        wallet_private_key="xxx",
+        agent_wallet_address="xxx",
         config=BASE_SEPOLIA_CONFIG,
         on_evaluate=on_evaluate
     )

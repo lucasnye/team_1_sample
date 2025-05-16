@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "acp-python"
+name = "acp-sdk"
 version = "0.1.0"
 description = "ACP Plugin for Python SDK for GAME by Virtuals"
 authors = ["Steven Lee Soon Fatt <steven@virtuals.io>"]

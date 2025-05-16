@@ -9,7 +9,6 @@ def build_acp_job(acp_client, data: dict) -> AcpJob:
     """Constructs an AcpJob instance from socket data."""
     memos = [
         AcpMemo(
-            acp_client,
             memo["memoId"],
             memo["memoType"],
             memo["content"],
@@ -19,7 +18,6 @@ def build_acp_job(acp_client, data: dict) -> AcpJob:
     ]
 
     return AcpJob(
-        acp_client,
         data["onChainJobId"],
         data["sellerAddress"],
         memos,

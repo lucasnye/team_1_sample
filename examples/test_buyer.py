@@ -1,41 +1,42 @@
 from collections.abc import Callable
 from datetime import datetime, timedelta
+import json
 import sys
 import os
 import time
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from acp_python.client import VirtualsACP
-from acp_python.models import ACPJobPhase
-from acp_python.job import AcpJob
+from acp_python.models import ACPJobPhase, IACPJob
 from acp_python.configs import BASE_SEPOLIA_CONFIG
+from acp_python.utils.job_actions import pay_job
+
 
 
 def test_buyer():
-    def on_new_task(job: AcpJob, callback: Callable):
-        if job.phase == ACPJobPhase.NEGOTIATION:
+    def on_new_task(job: IACPJob):
+        job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
+        if job_phase == ACPJobPhase.NEGOTIATION:
             # Check if there's a memo that indicates next phase is TRANSACTION
             for memo in job.memos:
-                if memo.next_phase == ACPJobPhase.TRANSACTION:
-                    print("Paying job", job)
-                    job.pay(2)
-                    callback(True)
+                next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
+                if next_phase == ACPJobPhase.TRANSACTION:
+                    print("Paying job", job.id)
+                    pay_job(acp, job.id, job.memos, 2)
                     break
-        elif job.phase == ACPJobPhase.COMPLETED:
-            callback(True)
+        elif job_phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
             
-            
     acp = VirtualsACP(
-        wallet_private_key="60e3438e1cd3b3ca6afa310e3350a59fa8a51ba42266c1281dee237b8ec264f2",
-        agent_wallet_address="0x9cb1497E8192FDCc60c4dC6D3B01F40D9215ad50",
+        wallet_private_key="xxx",
+        agent_wallet_address="xxx",
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task
     )
     
     agents = acp.browse_agents(keyword="meme", cluster="999")
-
     
     job_offering = agents[2].offerings[0]
     

@@ -12,7 +12,6 @@ class AcpMemo:
         content: str,
         next_phase: int
     ):
-        self.acp_client = acp_client
         self.id = id
         self.type = type
         self.content = content

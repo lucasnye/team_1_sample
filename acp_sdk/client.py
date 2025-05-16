@@ -2,8 +2,7 @@
 
 import json
 import traceback
-from wsgiref import validate
-from jsonschema import ValidationError
+from jsonschema import ValidationError, validate
 import requests
 import time
 from datetime import datetime, timezone, timedelta
@@ -16,12 +15,10 @@ import socketio
 import socketio.client
 
 from utils.job_helpers import build_acp_job
-from .memo import AcpMemo
-from .models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
-
 # Relative imports within the package
 from .configs import ACPContractConfig, DEFAULT_CONFIG
 from .exceptions import ACPApiError, ACPContractError, ACPError
+from .models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
 from .contract_manager import _ACPContractManager # Import the refactored class
 
 class VirtualsACP:
@@ -63,25 +60,37 @@ class VirtualsACP:
     def _default_on_evaluate(self, job: IACPJob) -> Tuple[bool, str]:
         """Default handler for job evaluation events."""
         return True,"Succesful"
+    
 
     def _setup_socket_handlers(self) -> None:
         """Set up socket event handlers."""
         @self.sio.on('roomJoined')
         def on_room_joined(data):
-            print('Connected to room',data)
+            print('Connected to room', data)
             
         @self.sio.on('onEvaluate')
         def handle_evaluate(data):
             if self.on_evaluate:
                 job = build_acp_job(self, data)
-                self.on_evaluate(job)
-
-        @self.sio.on('onNewTask')
+                try:
+                    self.on_evaluate(job)
+                    return True
+                except Exception as e:
+                    print(f"Error in onEvaluate handler: {e}")
+                    return False
+                        
         def handle_new_task(data):
-            print("on_new_task", data)
-            if self.on_new_task:
-                job = build_acp_job(data)
-                self.on_new_task(job)
+                if self.on_new_task:
+                    job = build_acp_job(self, data)
+                    try:
+                        self.on_new_task(job)
+                        return True
+                    except Exception as e:
+                        print(f"Error in onNewTask handler: {e}")
+                        return False
+                
+
+        self.sio.on('onNewTask', handle_new_task)
 
     def _connect_socket(self) -> None:
         """Connect to the socket server with appropriate authentication."""
@@ -92,7 +101,6 @@ class VirtualsACP:
         if self.on_evaluate != self._default_on_evaluate:
             auth_data['evaluatorAddress'] = self.agent_address
 
-        print(auth_data)
         try:
             self.sio.connect(
                 self.acp_api_url,
@@ -118,6 +126,7 @@ class VirtualsACP:
     @property
     def signer_address(self) -> str:
         return self.signer_account.address
+    
 
     def browse_agents(self, keyword: str, cluster: Optional[str] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$neq]={self.agent_address}"
@@ -132,13 +141,14 @@ class VirtualsACP:
             agents_data = data.get("data", [])
             agents = []
             for agent_data in agents_data:
+                
                 offerings = [
                     AcpJobOffering(
                         acp_client=self,
                         provider_address=agent_data["walletAddress"],
                         type=off["name"],
                         price=off["price"],
-                        schema=off.get("schema", None)
+                        requirementSchema=off.get("requirementSchema", None)
                     )
                     for off in agent_data.get("offerings", [])
                 ]
@@ -200,8 +210,9 @@ class VirtualsACP:
                     break  
                 
             except Exception as e:
-                print(f"Error in create_job function: {e}")
-                print(traceback.format_exc())
+                if (attempt == retry_count - 1):
+                    print(f"Error in create_job function: {e}")
+                    print(traceback.format_exc())
                 if attempt < retry_count - 1:
                     time.sleep(retry_delay) 
                 else:
@@ -230,6 +241,7 @@ class VirtualsACP:
             "evaluatorAddress": evaluator_address
         }
         
+        
         requests.post(
             self.acp_api_url,
             json=payload,
@@ -240,74 +252,150 @@ class VirtualsACP:
         )
         return job_id
 
-    def respond_to_job_memo(self, memo_id: int, accept: bool, reason: Optional[str] = "") -> str:
-        tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
-        # print(f"Response (signMemo) tx: {tx_hash} for memo ID {memo_id}")
-        return tx_hash
-
-    def pay_for_job(self, job_id: int, amount_in_eth: Union[float, str]) -> Tuple[str, str]:
+    def respond_to_job_memo(self,job_id: int, memo_id: int, accept: bool, reason: Optional[str] = "") -> str:
+        try:
+            tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
+            
+            time.sleep(10)
+            
+            print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
+            self.contract_manager.create_memo(
+                self.agent_address,
+                job_id,
+                f"{reason if reason else f'Job {job_id} accepted.'}",
+                MemoType.MESSAGE,
+                is_secured=False,
+                next_phase=ACPJobPhase.TRANSACTION
+            )
+            print(f"Responded to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
+            return tx_hash
+        except Exception as e:
+            print(f"Error in respond_to_job_memo: {e}")
+            print(traceback.format_exc())
+            raise
+    def pay_for_job(self, job_id: int, memo_id: int, amount_in_eth: Union[float, str], reason: Optional[str] = "") -> Tuple[str, str]:
         amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
         
+        time.sleep(10)
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
-        # print(f"Token approval tx: {approve_tx_hash} for job {job_id}")
+        time.sleep(10)
 
         set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
-        # print(f"Set budget tx: {set_budget_tx_hash} for job {job_id}")
-        
-        return approve_tx_hash, set_budget_tx_hash
+        time.sleep(10)
 
-    def submit_job_deliverable(self, job_id: int, deliverable_content: str, deliverable_type: MemoType = MemoType.OBJECT_URL) -> str:
+        sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
+        time.sleep(10)
+
+        create_memo_tx_hash = self.contract_manager.create_memo(
+            self.agent_address,
+            job_id,
+            f"Job {job_id} paid. {reason if reason else ''}",
+            MemoType.MESSAGE,
+            is_secured=False,
+            next_phase=ACPJobPhase.EVALUATION
+        )
+        
+        print(f"Paid for job {job_id} with memo {memo_id} and amount {amount_in_eth} and reason {reason}")
+        return approve_tx_hash, set_budget_tx_hash, sign_memo_tx_hash, create_memo_tx_hash
+
+    def submit_job_deliverable(self, job_id: int, deliverable_content: str) -> str:
         tx_hash = self.contract_manager.create_memo(
             self.agent_address,
             job_id,
             deliverable_content,
-            deliverable_type,
-            is_secured=True, 
-            next_phase=ACPJobPhase.COMPLETED 
+            MemoType.OBJECT_URL,
+            is_secured=True,
+            next_phase=ACPJobPhase.COMPLETED
         )
         # print(f"Deliverable submission tx: {tx_hash} for job {job_id}")
         return tx_hash
 
     def evaluate_job_delivery(self, memo_id_of_deliverable: int, accept: bool, reason: Optional[str] = "") -> str:
         tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id_of_deliverable, accept, reason or "")
-        # print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable}")
+        print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
         return tx_hash
 
-    def get_job_details(self, job_id: int) -> AcpJob:
+    def get_job_details(self, job_id: int) -> IACPJob:
         return self.contract_manager.get_job_details(job_id)
 
-    def get_active_jobs(self) -> List[AcpJob]:
-        # print("get_active_jobs: Not fully implemented, requires event querying or backend.")
-        return [] # Placeholder
-
-    def get_job_memos(self, job_id: int, phase: Optional[ACPJobPhase] = None, offset: int = 0, limit: int = 10) -> Tuple[List[Dict[str, Any]], int]:
+    def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
+        url = f"{self.acp_api_url}/api/jobs/active?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        headers = {
+            "wallet-address": self.agent_address
+        }
+        
         try:
-            if phase:
-                raw_memos, total = self.contract_manager.contract.functions.getMemosForPhase(
-                    job_id, phase.value, offset, limit
-                ).call()
-            else:
-                raw_memos, total = self.contract_manager.contract.functions.getAllMemos(
-                    job_id, offset, limit
-                ).call()
-            
-            memos = []
-            for raw_memo_tuple in raw_memos:
-                # Structure from ABI: (content, memoType, isSecured, nextPhase, jobId, sender)
-                memos.append({
-                    "content": raw_memo_tuple[0],
-                    "memo_type": MemoType(raw_memo_tuple[1]),
-                    "is_secured": raw_memo_tuple[2],
-                    "next_phase": ACPJobPhase(raw_memo_tuple[3]),
-                    # "job_id_in_memo": raw_memo_tuple[4], # Redundant if called with job_id
-                    "sender": raw_memo_tuple[5],
-                    # "id": "UNKNOWN" # Memo ID is crucial and not returned by these view functions
-                                     # This is a limitation of the current smart contract view functions
-                                     # Typically, memo IDs are obtained from NewMemo events.
-                })
-            return memos, total
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", [])
         except Exception as e:
-            raise ACPContractError(f"Failed to get memos for job {job_id}: {e}")
+            raise ACPApiError(f"Failed to get active jobs: {e}")
+        
+    def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
+        url = f"{self.acp_api_url}/api/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        headers = {
+            "wallet-address": self.agent_address
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", [])
+        except Exception as e:
+            raise ACPApiError(f"Failed to get completed jobs: {e}")
+        
+    def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
+        url = f"{self.acp_api_url}/api/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        headers = {
+            "wallet-address": self.agent_address
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", [])
+        except Exception as e:
+            raise ACPApiError(f"Failed to get cancelled jobs: {e}")
+        
+    def get_job_by_onchain_id(self, onchain_job_id: int) -> IACPJob:
+        url = f"{self.acp_api_url}/api/jobs/{onchain_job_id}"
+        headers = {
+            "wallet-address": self.agent_address
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get("error"):
+                raise ACPApiError(data["error"]["message"])
+                
+            return data
+        except Exception as e:
+            raise ACPApiError(f"Failed to get job by onchain ID: {e}")
+        
+    def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> Dict[str, Any]:
+        url = f"{self.acp_api_url}/api/jobs/{onchain_job_id}/memos/{memo_id}"
+        headers = {
+            "wallet-address": self.agent_address
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get("error"):
+                raise ACPApiError(data["error"]["message"])
+                
+            return data
+        except Exception as e:
+            raise ACPApiError(f"Failed to get memo by ID: {e}")
+
 class AcpJobOffering:
     def __init__(
         self,
@@ -315,35 +403,36 @@ class AcpJobOffering:
         provider_address: str,
         type: str,
         price: float,
-        schema: str
+        requirementSchema: str | Dict[str, Any]
     ):
         self.acp_client = acp_client
         self.provider_address = provider_address
         self.type = type
         self.price = price
         try:
-            self.schema = json.loads(schema) if schema else None
+            self.requirementSchema = json.loads(json.dumps(requirementSchema))
         except json.JSONDecodeError:
-            self.schema = None
-
+            self.requirementSchema = None
+            
     def initiate_job(
         self,
         price: float,
         service_requirement: Union[Dict[str, Any], str],
         expired_at: datetime
     ) -> int:
-        if self.schema:
+        if self.requirementSchema:
             try:
                 # If service_requirement is a string, parse it as JSON
                 if isinstance(service_requirement, str):
                     service_requirement = json.loads(service_requirement)
                 
-                validate(instance=service_requirement, schema=self.schema)
+                validate(instance=service_requirement, schema=self.requirementSchema)
             except ValidationError as e:
                 raise ValueError(f"Invalid service requirement: {str(e)}")
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON in service requirement: {str(e)}")
-        return  self.acp_client.initiate_job(
+            
+        return self.acp_client.initiate_job(
             price,
             self.provider_address,
             service_requirement,

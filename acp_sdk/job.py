@@ -18,3 +18,13 @@ class AcpJob:
         self.provider_address = provider_address
         self.memos = memos
         self.phase = phase
+
+    def __str__(self):
+        return (
+            f"AcpJob(\n"
+            f"  id={self.id},\n"
+            f"  provider_address='{self.provider_address}',\n"
+            f"  memos=[{', '.join(str(memo) for memo in self.memos)}],\n"
+            f"  phase={self.phase.name}\n"
+            f")"
+        )

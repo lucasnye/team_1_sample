@@ -8,7 +8,6 @@ import time
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple, Union, Dict, Any
 from web3 import Web3
-# from web3.middleware.geth_poa import geth_poa_middleware
 from web3.middleware import ExtraDataToPOAMiddleware
 from eth_account import Account
 from eth_account.signers.local import LocalAccount

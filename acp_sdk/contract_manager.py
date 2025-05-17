@@ -62,7 +62,7 @@ class _ACPContractManager:
         
         # Sign the transaction
         message = encode_defunct(message_bytes)
-        signature =  self.account.sign_message(message).signature.hex()
+        signature = "0x" + self.account.sign_message(message).signature.hex()
         return trx_data, signature
 
     def create_job(

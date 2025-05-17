@@ -8,7 +8,7 @@ import time
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple, Union, Dict, Any
 from web3 import Web3
-from web3.middleware.geth_poa import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 import socketio
@@ -33,7 +33,7 @@ class VirtualsACP:
         self.w3 = Web3(Web3.HTTPProvider(config.rpc_url))
 
         if config.chain_env == "base-sepolia":
-            self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         if not self.w3.is_connected():
             raise ConnectionError(f"Failed to connect to RPC URL: {config.rpc_url}")
@@ -61,36 +61,29 @@ class VirtualsACP:
         """Default handler for job evaluation events."""
         return True,"Succesful"
     
+    def _on_room_joined(self, data):
+        print('Connected to room', data)
+
+    def _on_evaluate(self, data):
+        if self.on_evaluate:
+            job = build_acp_job(self, data)
+            try:
+                self.on_evaluate(job)
+            except Exception as e:
+                print(f"Error in onEvaluate handler: {e}")
+
+    def _on_new_task(self, data):
+        if self.on_new_task:
+            job = build_acp_job(self, data)
+            try:
+                self.on_new_task(job)
+            except Exception as e:
+                print(f"Error in onNewTask handler: {e}")
 
     def _setup_socket_handlers(self) -> None:
-        """Set up socket event handlers."""
-        @self.sio.on('roomJoined')
-        def on_room_joined(data):
-            print('Connected to room', data)
-            
-        @self.sio.on('onEvaluate')
-        def handle_evaluate(data):
-            if self.on_evaluate:
-                job = build_acp_job(self, data)
-                try:
-                    self.on_evaluate(job)
-                    return True
-                except Exception as e:
-                    print(f"Error in onEvaluate handler: {e}")
-                    return False
-                        
-        def handle_new_task(data):
-                if self.on_new_task:
-                    job = build_acp_job(self, data)
-                    try:
-                        self.on_new_task(job)
-                        return True
-                    except Exception as e:
-                        print(f"Error in onNewTask handler: {e}")
-                        return False
-                
-
-        self.sio.on('onNewTask', handle_new_task)
+        self.sio.on('roomJoined', self._on_room_joined)
+        self.sio.on('onEvaluate', self._on_evaluate)
+        self.sio.on('onNewTask', self._on_new_task)
 
     def _connect_socket(self) -> None:
         """Connect to the socket server with appropriate authentication."""
@@ -129,7 +122,7 @@ class VirtualsACP:
     
 
     def browse_agents(self, keyword: str, cluster: Optional[str] = None) -> List[IACPAgent]:
-        url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$neq]={self.agent_address}"
+        url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$notIn]={self.agent_address}"
         if cluster:
             url += f"&filters[cluster]={cluster}"
             

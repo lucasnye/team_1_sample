@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import validator
+from pydantic import field_validator
 
 class EnvSettings(BaseSettings):
     WHITELISTED_WALLET_PRIVATE_KEY: str
@@ -8,12 +8,18 @@ class EnvSettings(BaseSettings):
     SELLER_WALLET_ADDRESS: str
     EVALUATOR_WALLET_ADDRESS: str
 
-    @validator("WHITELISTED_WALLET_PRIVATE_KEY")
+    @field_validator("WHITELISTED_WALLET_PRIVATE_KEY")
+    @classmethod
     def strip_0x_prefix(cls, v: str) -> str:
-        return v[2:] if v.startswith("0x") else v
-
-    @validator("BUYER_WALLET_ADDRESS", "SELLER_WALLET_ADDRESS", "EVALUATOR_WALLET_ADDRESS")
-    def wallet_address_should_start_with_0x(cls, v):
-        if not v.startswith("0x") or len(v) != 42:
-            raise ValueError("Wallet address must start with '0x' and be 42 characters long")
+        print(f"Validating WHITELISTED_WALLET_PRIVATE_KEY: {v}")
+        if v.startswith("0x"):
+            raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY must not start with '0x'. Please remove it.")
         return v
+
+    @field_validator("BUYER_WALLET_ADDRESS", "SELLER_WALLET_ADDRESS", "EVALUATOR_WALLET_ADDRESS")
+    @classmethod
+    def validate_wallet_address(cls, v: str) -> str:
+        if not v.startswith("0x") or len(v) != 42:
+            raise ValueError("Wallet address must start with '0x' and be 42 characters long.")
+        return v
+    

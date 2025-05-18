@@ -12,6 +12,10 @@ from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.utils.job_actions import pay_job
 from acp_sdk.env import EnvSettings
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def test_buyer():
     env = EnvSettings()  # ⬅️ load from .env automatically

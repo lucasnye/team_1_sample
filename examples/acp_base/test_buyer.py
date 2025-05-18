@@ -30,8 +30,8 @@ def test_buyer():
             print("Job completed", job)
             
     acp = VirtualsACP(
-        wallet_private_key=env.ACP_TOKEN_BUYER,
-        agent_wallet_address=env.ACP_AGENT_WALLET_ADDRESS_BUYER,
+        wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
+        agent_wallet_address=env.BUYER_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task
     )

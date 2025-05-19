@@ -3,7 +3,7 @@ import os
 import time
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from acp_sdk.utils.job_actions import evaluate_job
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob

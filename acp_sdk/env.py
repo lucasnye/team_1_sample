@@ -3,7 +3,6 @@ from pydantic import field_validator
 
 class EnvSettings(BaseSettings):
     WHITELISTED_WALLET_PRIVATE_KEY: str
-    WHITELISTED_WALLET_ENTITY_ID: int
     BUYER_WALLET_ADDRESS: str
     SELLER_WALLET_ADDRESS: str
     EVALUATOR_WALLET_ADDRESS: str

@@ -13,6 +13,7 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 import socketio
 import socketio.client
+from pydantic import BaseModel, field_validator, Field
 
 from utils.job_helpers import build_acp_job
 # Relative imports within the package
@@ -312,7 +313,7 @@ class VirtualsACP:
         return self.contract_manager.get_job_details(job_id)
 
     def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
-        url = f"{self.acp_api_url}/api/jobs/active?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        url = f"{self.acp_api_url}/jobs/active?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -326,7 +327,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get active jobs: {e}")
         
     def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
-        url = f"{self.acp_api_url}/api/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        url = f"{self.acp_api_url}/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -340,7 +341,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get completed jobs: {e}")
         
     def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
-        url = f"{self.acp_api_url}/api/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        url = f"{self.acp_api_url}/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -354,7 +355,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get cancelled jobs: {e}")
         
     def get_job_by_onchain_id(self, onchain_job_id: int) -> IACPJob:
-        url = f"{self.acp_api_url}/api/jobs/{onchain_job_id}"
+        url = f"{self.acp_api_url}/jobs/{onchain_job_id}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -372,7 +373,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")
         
     def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> Dict[str, Any]:
-        url = f"{self.acp_api_url}/api/jobs/{onchain_job_id}/memos/{memo_id}"
+        url = f"{self.acp_api_url}/jobs/{onchain_job_id}/memos/{memo_id}"
         headers = {
             "wallet-address": self.agent_address
         }

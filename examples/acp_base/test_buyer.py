@@ -10,10 +10,16 @@ from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.utils.job_actions import pay_job
+from acp_sdk.env import EnvSettings
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def test_buyer():
+    env = EnvSettings()  # ⬅️ load from .env automatically
+
     def on_new_task(job: IACPJob):
         job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
         if job_phase == ACPJobPhase.NEGOTIATION:
@@ -28,8 +34,8 @@ def test_buyer():
             print("Job completed", job)
             
     acp = VirtualsACP(
-        wallet_private_key=os.environ.get("ACP_TOKEN_BUYER"),
-        agent_wallet_address=os.environ.get("ACP_AGENT_WALLET_ADDRESS_BUYER"),
+        wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
+        agent_wallet_address=env.BUYER_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task
     )

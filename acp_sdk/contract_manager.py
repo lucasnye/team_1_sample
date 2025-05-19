@@ -13,14 +13,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 from eth_account import Account
 import requests
 from web3 import Web3
-import web3
 from web3.contract import Contract
-from eth_account.signers.local import LocalAccount
 
 from abi import ACP_ABI, ERC20_ABI
 from configs import ACPContractConfig
 from models import ACPJobPhase, MemoType, IACPJob, IMemo # ACPMemo might be useful here too
-from exceptions import ACPContractError, TransactionFailedError
 from eth_account.messages import encode_defunct
 
 
@@ -41,9 +38,9 @@ class _ACPContractManager:
         try:
             response = requests.post(f"{self.config.acp_api_url}/acp-agent-wallets/trx-result", json={"userOpHash": hash_value})
             return response.json()
-        except Exception as error:
+        except Exception as e:
             print(traceback.format_exc())
-            raise Exception(f"Failed to get job_id {error}")
+            raise Exception(f"Failed to get job_id {e}")
     
     def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> Tuple[dict, str]:
         if contract_address:
@@ -73,7 +70,6 @@ class _ACPContractManager:
         expire_at: datetime
     ) -> dict:
         retries = 3
-        error = None
         while retries > 0:
             try:
                 provider_address = Web3.to_checksum_address(provider_address)
@@ -111,7 +107,6 @@ class _ACPContractManager:
 
     def approve_allowance(self, agent_wallet_address: str, price_in_wei: int) -> str:
         retries = 3
-        error = None
         while retries > 0:
             try:
                 trx_data, signature = self._sign_transaction(
@@ -128,26 +123,26 @@ class _ACPContractManager:
                 
                 api_url = f"{self.config.acp_api_url}/acp-agent-wallets/transactions"
                 response = requests.post(api_url, json=payload)
+                data = response.json()
                 
-                if (response.json().get("error")):
-                    raise Exception(f"Failed to approve allowance {response.json().get('error').get('status')}, Message: {response.json().get('error').get('message')}")
+                if (data.get("error")):
+                    raise Exception(
+                    f"Failed to approve allowance {data['error'].get('status')}, "
+                    f"Message: {data['error'].get('message')}"
+                )
                     
-                return response.json()
+                return data
             except Exception as e:
-                error = e
-                if (retries == 1):
-                    print(f"{e}")
-                    print(traceback.format_exc())
                 retries -= 1
+                if retries == 0:
+                    print(f"Error during approve_allowance: {e}")
+                    print(traceback.format_exc())
+                    raise
                 time.sleep(2 * (3 - retries))
-                
-            if error:
-                raise Exception(f"{error}")
 
         
     def create_memo(self, agent_wallet_address: str, job_id: int, content: str, memo_type: MemoType, is_secured: bool, next_phase: ACPJobPhase) -> str:
         retries = 3
-        error = None
 
         while retries > 0:
             try:
@@ -172,15 +167,12 @@ class _ACPContractManager:
                 
                 return { "txHash": response.json().get("txHash", response.json().get("id", "")), "memoId": response.json().get("memoId", "")}
             except Exception as e:
-                if (retries == 1):
-                    print(f"{e}")
-                    print(traceback.format_exc())
-                error = e
                 retries -= 1
+                if retries == 0:
+                    print(f"Error during create_memo: {e}")
+                    print(traceback.format_exc())
+                    raise
                 time.sleep(2 * (3 - retries))
-                
-            if error:
-                raise Exception(f"{error}")
 
 
     def sign_memo(
@@ -191,7 +183,6 @@ class _ACPContractManager:
         reason: Optional[str] = ""
     ) -> str:
         retries = 3
-        error = None
         while retries > 0:
             try:
                 trx_data, signature = self._sign_transaction(
@@ -214,18 +205,17 @@ class _ACPContractManager:
                 return response.json()
                 
             except Exception as e:
-                error = e
-                if (retries == 1):
-                    print(f"{error}")
-                    print(traceback.format_exc())
                 retries -= 1
+                if retries == 0:
+                    print(f"Error during sign_memo: {e}")
+                    print(traceback.format_exc())
+                    raise
                 time.sleep(2 * (3 - retries))
                 
-        raise Exception(f"Failed to sign memo {error}")
+        raise Exception(f"Failed to sign memo")
     
     def set_budget(self, agent_wallet_address: str, job_id: int, budget: int) -> str:
         retries = 3
-        error = None
         while retries > 0:
             try:
                 trx_data, signature = self._sign_transaction(
@@ -246,12 +236,12 @@ class _ACPContractManager:
                     raise Exception(f"Failed to set budget {response.json().get('error').get('status')}, Message: {response.json().get('error').get('message')}")
                 
                 return response.json()
-            except Exception as error:
-                error = e
+            except Exception as e:
                 retries -= 1
-                if (retries == 1):
-                    print(f"{e}")
+                if retries == 0:
+                    print(f"Error during set_budget: {e}")
                     print(traceback.format_exc())
+                    raise
                 time.sleep(2 * (3 - retries))
                 
 
@@ -299,8 +289,7 @@ class _ACPContractManager:
     ) -> Optional[IMemo]:
         try:
             memos = self.contract.functions.getMemosForPhase(job_id, phase).call()
-            
             target_memos = [m for m in memos if m['nextPhase'] == target_phase]
             return target_memos[-1] if target_memos else None
-        except Exception as error:
-            raise Exception(f"Failed to get memos for phase {error}")
+        except Exception as e:
+            raise Exception(f"Failed to get memos for phase {e}")

@@ -25,6 +25,6 @@ class AcpJob:
             f"  id={self.id},\n"
             f"  provider_address='{self.provider_address}',\n"
             f"  memos=[{', '.join(str(memo) for memo in self.memos)}],\n"
-            f"  phase={self.phase.name}\n"
+            f"  phase={self.phase}\n"
             f")"
         )

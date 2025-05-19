@@ -8,8 +8,17 @@ from acp_sdk.utils.job_actions import evaluate_job
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
+from acp_sdk.env import EnvSettings
+
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 def evaluator():
+    env = EnvSettings()
+    print("Evaluator wallet private key:", env.WHITELISTED_WALLET_PRIVATE_KEY)
+    print("Evaluator wallet address:", env.EVALUATOR_WALLET_ADDRESS)
+
     def on_evaluate(job: IACPJob):
         print("Evaluation function called", job.memos)
         # Find the deliverable memo
@@ -22,8 +31,8 @@ def evaluator():
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
-        wallet_private_key=os.environ.get("ACP_TOKEN_EVAL"),
-        agent_wallet_address=os.environ.get("ACP_AGENT_WALLET_ADDRESS_EVAL"),
+        wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
+        agent_wallet_address=env.EVALUATOR_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_evaluate=on_evaluate
     )

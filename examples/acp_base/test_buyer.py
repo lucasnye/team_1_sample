@@ -14,11 +14,11 @@ from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 def test_buyer():
-    env = EnvSettings()  # ⬅️ load from .env automatically
+    env = EnvSettings()
 
     def on_new_task(job: IACPJob):
         job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase

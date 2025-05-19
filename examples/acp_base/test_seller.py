@@ -10,8 +10,15 @@ from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.utils.job_actions import respond_job, deliver_job
+from acp_sdk.env import EnvSettings
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def seller():
+    env = EnvSettings()
+
     def on_new_task(job: IACPJob):
         # Convert job.phase to ACPJobPhase enum if it's an integer
         job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
@@ -42,8 +49,8 @@ def seller():
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
-        wallet_private_key=os.environ.get("ACP_TOKEN_SELLER"),
-        agent_wallet_address=os.environ.get("ACP_AGENT_WALLET_ADDRESS_SELLER"),
+        wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
+        agent_wallet_address=env.SELLER_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task
     )

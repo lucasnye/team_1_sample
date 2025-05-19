@@ -4,7 +4,7 @@ import os
 import time
 import json
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob

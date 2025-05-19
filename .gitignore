@@ -12,3 +12,6 @@ venv/
 # Python bytecode cache
 __pycache__/
 *.py[cod]
+
+
+.env

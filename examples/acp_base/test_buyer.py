@@ -4,7 +4,7 @@ import os
 import time
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase, IACPJob
@@ -42,7 +42,8 @@ def test_buyer():
     
     agents = acp.browse_agents(keyword="meme", cluster="999")
     
-    job_offering = agents[2].offerings[0]
+    
+    job_offering = agents[1].offerings[0]
     
     job_id = job_offering.initiate_job(
         price=float(2),

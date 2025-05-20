@@ -20,16 +20,14 @@ def test_buyer():
     env = EnvSettings()
 
     def on_new_task(job: AcpJob):
-        job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
-        if job_phase == ACPJobPhase.NEGOTIATION:
+        if job.phase == ACPJobPhase.NEGOTIATION:
             # Check if there's a memo that indicates next phase is TRANSACTION
             for memo in job.memos:
-                next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
-                if next_phase == ACPJobPhase.TRANSACTION:
+                if memo.next_phase == ACPJobPhase.TRANSACTION:
                     print("Paying job", job.id)
                     job.pay(2)
                     break
-        elif job_phase == ACPJobPhase.COMPLETED:
+        elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
             
     acp = VirtualsACP(
@@ -39,18 +37,18 @@ def test_buyer():
         on_new_task=on_new_task
     )
     
-    agents = acp.browse_agents(keyword="meme", cluster="999")
+    # agents = acp.browse_agents(keyword="meme", cluster="999")
     
     
-    job_offering = agents[1].offerings[0]
+    # job_offering = agents[1].offerings[0]
     
-    job_id = job_offering.initiate_job(
-        price=float(2),
-        service_requirement="Help me generate a meme",
-        expired_at=datetime.now() + timedelta(days=1)
-    )
+    # job_id = job_offering.initiate_job(
+    #     price=float(2),
+    #     service_requirement="Help me generate a meme",
+    #     expired_at=datetime.now() + timedelta(days=1)
+    # )
     
-    print(f"Job {job_id} initiated")
+    #print(f"Job {job_id} initiated")
     
     while True:
         print("Listening for next steps...")

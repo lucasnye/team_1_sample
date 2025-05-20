@@ -20,25 +20,17 @@ def seller():
     env = EnvSettings()
 
     def on_new_task(job: AcpJob):
-        print(job,'job')
         # Handle phase conversion regardless of input type
-        
-        job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
         if job.phase == ACPJobPhase.REQUEST:
-            print(job,'job_phase')
             # Check if there's a memo that indicates next phase is NEGOTIATION
             for memo in job.memos:
-                next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
-                if next_phase == ACPJobPhase.NEGOTIATION:
-                    print("negotiation")
+                if memo.next_phase == ACPJobPhase.NEGOTIATION:
                     job.respond(True)
                     break
-        elif job_phase == ACPJobPhase.TRANSACTION:
+        elif job.phase == ACPJobPhase.TRANSACTION:
             # Check if there's a memo that indicates next phase is EVALUATION
             for memo in job.memos:
-                next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
-                if next_phase == ACPJobPhase.EVALUATION:
-                    print("Delivering job", job)
+                if memo.next_phase == ACPJobPhase.EVALUATION:
                     delivery_data = {
                         "type": "url",
                         "value": "https://example.com"

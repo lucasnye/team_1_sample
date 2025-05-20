@@ -16,17 +16,13 @@ load_dotenv(override=True)
 
 def evaluator():
     env = EnvSettings()
-    print("Evaluator wallet private key:", env.WHITELISTED_WALLET_PRIVATE_KEY)
-    print("Evaluator wallet address:", env.EVALUATOR_WALLET_ADDRESS)
 
     def on_evaluate(job: AcpJob):
-        print("Evaluation function called", job.memos)
-        job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
         # Find the deliverable memo
         for memo in job.memos:
-            next_phase = ACPJobPhase(memo.next_phase)
-            if next_phase == ACPJobPhase.COMPLETED:
-                # Evaluate the deliverable by accepting it
+            print(memo.next_phase, ACPJobPhase.COMPLETED)
+            if memo.next_phase == ACPJobPhase.COMPLETED:
+                print("Evaluating deliverable", job.id)
                 job.evaluate(True)
                 break
 

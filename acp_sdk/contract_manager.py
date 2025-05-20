@@ -8,6 +8,9 @@ from typing import Optional, Tuple
 
 import os
 import sys
+
+from acp_sdk.job import AcpJob
+from acp_sdk.memo import AcpMemo
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 from eth_account import Account
@@ -17,7 +20,7 @@ from web3.contract import Contract
 
 from abi import ACP_ABI, ERC20_ABI
 from configs import ACPContractConfig
-from models import ACPJobPhase, MemoType, IACPJob, IMemo # ACPMemo might be useful here too
+from models import ACPJobPhase, MemoType
 from eth_account.messages import encode_defunct
 
 
@@ -243,52 +246,4 @@ class _ACPContractManager:
                     raise
                 time.sleep(2 * (3 - retries))
                 
-
-    def get_job_details(self, job_id: int) -> IACPJob:
-        try:
-            # Call structure: (id, client, provider, budget, amountClaimed, phase, memoCount, expiredAt, evaluator)
-            job_data_tuple = self.contract.functions.jobs(job_id).call()
-            
-            return IACPJob(
-                id=job_data_tuple[0],
-                client_address=job_data_tuple[1],
-                provider_address=job_data_tuple[2],
-                budget=job_data_tuple[3],
-                amount_claimed=job_data_tuple[4],
-                phase=ACPJobPhase(job_data_tuple[5]),
-                memo_count=job_data_tuple[6],
-                expired_at_timestamp=job_data_tuple[7],
-                evaluator_address=job_data_tuple[8],
-                memos=[] # Memos need to be fetched separately using client.get_job_memos
-            )
-        except Exception as e:
-            raise ACPContractError(f"Failed to get job details for job {job_id}: {e}")
         
-    def get_memo_by_job(
-        self,
-        job_id: int,
-        memo_type: Optional[MemoType] = None
-    ) -> Optional[IMemo]:
-        try:
-            memos = self.contract.functions.getAllMemos(job_id).call()
-            
-            if memo_type is not None:
-                filtered_memos = [m for m in memos if m['memoType'] == memo_type]
-                return filtered_memos[-1] if filtered_memos else None
-            else:
-                return memos[-1] if memos else None
-        except Exception as error:
-            raise Exception(f"Failed to get memo by job {error}")
-        
-    def get_memos_for_phase(
-        self,
-        job_id: int,
-        phase: int,
-        target_phase: int
-    ) -> Optional[IMemo]:
-        try:
-            memos = self.contract.functions.getMemosForPhase(job_id, phase).call()
-            target_memos = [m for m in memos if m['nextPhase'] == target_phase]
-            return target_memos[-1] if target_memos else None
-        except Exception as e:
-            raise Exception(f"Failed to get memos for phase {e}")

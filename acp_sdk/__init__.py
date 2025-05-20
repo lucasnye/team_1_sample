@@ -4,11 +4,6 @@ from .models import (
     IACPAgent,
     ACPJobPhase,
     MemoType,
-    IACPJob,
-    IACPMemo,
-    IMemo,
-    IJob,
-    JobResult
 )
 from .configs import (
     ACPContractConfig,
@@ -33,8 +28,6 @@ __all__ = [
     "ACPJobPhase",
     "MemoType",
     "IACPOffering",
-    "IACPJob",
-    "IACPMemo",
     "ACPContractConfig",
     "BASE_SEPOLIA_CONFIG",
     "BASE_MAINNET_CONFIG",
@@ -45,9 +38,6 @@ __all__ = [
     "TransactionFailedError",
     "ACP_ABI",
     "ERC20_ABI",
-    "IMemo",
-    "IJob",
-    "JobResult",
     "AcpJob",
     "AcpMemo"
 ]

@@ -15,10 +15,10 @@ import socketio
 import socketio.client
 
 from acp_sdk.job import AcpJob
-import acp_sdk.memo as acp_memo
+from acp_sdk.memo import AcpMemo
 
 from acp_sdk.exceptions import ACPApiError, ACPError
-from acp_sdk.models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
+from acp_sdk.models import  ACPJobPhase, MemoType, IACPAgent
 from acp_sdk.contract_manager import _ACPContractManager
 from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
 
@@ -58,7 +58,7 @@ class VirtualsACP:
         self._setup_socket_handlers()
         self._connect_socket()
 
-    def _default_on_evaluate(self, job: IACPJob) -> Tuple[bool, str]:
+    def _default_on_evaluate(self, job: AcpJob) -> Tuple[bool, str]:
         """Default handler for job evaluation events."""
         return True,"Succesful"
     
@@ -68,7 +68,7 @@ class VirtualsACP:
     def _on_evaluate(self, data):
         if self.on_evaluate:
             try:
-                memos = [acp_memo.AcpMemo(
+                memos = [AcpMemo(
                     id=memo["memoId"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
@@ -90,7 +90,7 @@ class VirtualsACP:
         if self.on_new_task:
             print("Received new task:", data["memos"])
             try:
-                memos = [acp_memo.AcpMemo(
+                memos = [AcpMemo(
                     id=memo["memoId"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
@@ -103,7 +103,7 @@ class VirtualsACP:
                     id=data["onChainJobId"],
                     provider_address=data["sellerAddress"],
                     memos=memos,
-                    phase=ACPJobPhase(int(data["phase"]))
+                    phase=data["phase"]
                 )
                 
                 self.on_new_task(job)
@@ -338,8 +338,6 @@ class VirtualsACP:
         print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
         return tx_hash
 
-    def get_job_details(self, job_id: int) -> IACPJob:
-        return self.contract_manager.get_job_details(job_id)
 
     def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
         url = f"{self.acp_api_url}/jobs/active?pagination[page]={page}&pagination[pageSize]={pageSize}"
@@ -352,22 +350,23 @@ class VirtualsACP:
             response.raise_for_status()
             data = response.json()
             
+            
             jobs = []
+            # TODO: add memos to the job
             for job in data.get("data", []):
-                print(job)
-                
                 jobs.append(AcpJob(
                     acp_client=self,
-                    id=job["onChainJobId"],
-                    provider_address=job["sellerAddress"],
+                    id=job.get("onChainJobId"),
+                    provider_address=job.get("sellerAddress"),
                     memos=[],
-                    phase=ACPJobPhase(1)
+                    phase=job.get("phase")
                 ))
             return jobs 
         except Exception as e:
             raise ACPApiError(f"Failed to get active jobs: {e}")
         
-    def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
+        
+    def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
         url = f"{self.acp_api_url}/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
@@ -377,11 +376,21 @@ class VirtualsACP:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            return data.get("data", [])
+            jobs = []
+            # TODO: add memos to the job
+            for job in data.get("data", []):
+                jobs.append(AcpJob(
+                    acp_client=self,
+                    id=job.get("onChainJobId"),
+                    provider_address=job.get("sellerAddress"),
+                    memos=[],
+                    phase=job.get("phase")
+                ))
+            return jobs
         except Exception as e:
             raise ACPApiError(f"Failed to get completed jobs: {e}")
         
-    def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
+    def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
         url = f"{self.acp_api_url}/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
@@ -391,11 +400,21 @@ class VirtualsACP:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            return data.get("data", [])
+            jobs = []
+            # TODO: add memos to the job
+            for job in data.get("data", []):
+                jobs.append(AcpJob(
+                    acp_client=self,
+                    id=job.get("onChainJobId"),
+                    provider_address=job.get("sellerAddress"),
+                    memos=[],
+                    phase=job.get("phase")
+                ))
+            return jobs
         except Exception as e:
             raise ACPApiError(f"Failed to get cancelled jobs: {e}")
         
-    def get_job_by_onchain_id(self, onchain_job_id: int) -> IACPJob:
+    def get_job_by_onchain_id(self, onchain_job_id: int) -> "AcpJob":
         url = f"{self.acp_api_url}/jobs/{onchain_job_id}"
         headers = {
             "wallet-address": self.agent_address
@@ -408,12 +427,22 @@ class VirtualsACP:
             
             if data.get("error"):
                 raise ACPApiError(data["error"]["message"])
-                
-            return data
+            
+            print(data)
+            
+             
+            # TODO: add memos to the job
+            return AcpJob(
+                acp_client=self,
+                id=data.get("data", {}).get("onChainJobId"),
+                provider_address=data.get("data", {}).get("sellerAddress"),
+                memos=[],
+                phase=data.get("data", {}).get("phase")
+            )
         except Exception as e:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")
         
-    def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> Dict[str, Any]:
+    def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> 'AcpMemo':
         url = f"{self.acp_api_url}/jobs/{onchain_job_id}/memos/{memo_id}"
         headers = {
             "wallet-address": self.agent_address
@@ -426,8 +455,16 @@ class VirtualsACP:
             
             if data.get("error"):
                 raise ACPApiError(data["error"]["message"])
-                
-            return data
+            
+            
+            # TODO: add memo type
+            return AcpMemo(
+                id=data.get("data", {}).get("memoId"),
+                type=0,
+                content=data.get("data", {}).get("content"),
+                next_phase=0
+            )
+            
         except Exception as e:
             raise ACPApiError(f"Failed to get memo by ID: {e}")
 
@@ -476,3 +513,4 @@ class AcpJobOffering:
 
 # Rebuild the AcpJob model after VirtualsACP is defined
 AcpJob.model_rebuild()
+AcpMemo.model_rebuild()

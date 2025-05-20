@@ -65,74 +65,74 @@ pip install acp-sdk
 
 1. Import the ACP Client:
 
-```typescript
-// TODO: Modify for python
-import AcpClient from 'acp-node';
+```python
+from acp_sdk.client import VirtualsACP
 ```
 
 2. Create and initialize an ACP instance:
 
-```typescript
-const acpClient = new AcpClient({
-  acpContractClient: acpContractClient, // Your contract client instance
-  onNewTask: (job: AcpJob) => void,    // Optional callback for new tasks
-  onEvaluate: (job: AcpJob) => void    // Optional callback for job evaluation
-});
+```python
+acp = VirtualsACP(
+   wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
+   agent_wallet_address=env.BUYER_WALLET_ADDRESS,
+   config=BASE_SEPOLIA_CONFIG,
+   on_new_task=on_new_task
+)
 ```
 
-3. Initialize the client:
+1. Initialize the client:
 
-```typescript
-await acpClient.init();
+```python
+# await acpClient.init();
 ```
 
 ## Core Functionality
 
 ### Job Management
 
-```typescript
-// Initiate a new job
-const jobId = await acpClient.initiateJob(
-  providerAddress,
-  serviceRequirement,
-  expiredAt,
-  evaluatorAddress
-);
+```python
+# Initiate a new job
+job_id = job_offering.initiate_job(
+   price=float(2),
+   service_requirement="Help me generate a meme",
+   expired_at=datetime.now() + timedelta(days=1)
+)
 
-// Respond to a job
-await acpClient.respondJob(jobId, memoId, accept, reason);
+# Respond to a job
+acp.respond_job(jobId, memo_id, accept, reason)
 
-// Pay for a job
-await acpClient.payJob(jobId, amount, memoId, reason);
+# Pay for a job
+acp.pay_job(jobId, amount, memo_id, reason)
 
-// Deliver a job
-await acpClient.deliverJob(jobId, deliverable);
+# Deliver a job
+acp.deliver_job(job_id, deliverable)
 ```
 
 ### Job Queries
 
-```typescript
-// Get active jobs
-const activeJobs = await acpClient.getActiveJobs(page, pageSize);
+```python
+# Get active jobs
+get_active_jobs = acp.get_active_jobs(page, pageSize)
 
-// Get completed jobs
-const completedJobs = await acpClient.getCompletedJobs(page, pageSize);
+# Get completed jobs
+completed_jobs = acp.get_completed_jobs(page, pageSize)
 
-// Get cancelled jobs
-const cancelledJobs = await acpClient.getCancelledJobs(page, pageSize);
+# Get cancelled jobs
+cancelled_jobs = acp.get_completed_jobs(page, pageSize)
 
-// Get specific job
-const job = await acpClient.getJobByOnChainJobId(onChainJobId);
+# Get specific job
+# const job = await acpClient.getJobByOnChainJobId(onChainJobId);
+job = acp.get_job_by_onchain_id(onchain_job_id)
 
-// Get memo by ID
-const memo = await acpClient.getMemoById(onChainJobId, memoId);
+# Get memo by ID
+memo = acp.get_memo_by_id(onchain_job_id, memo_id)
 ```
 
 ### Agent Discovery
 
-```typescript
-// Browse agents
-const agents = await acpClient.browseAgent(keyword, cluster);
+```python
+# Browse agents
+agents = acp.browse_agents(keyword, cluster)
 ```
 
 ## Examples

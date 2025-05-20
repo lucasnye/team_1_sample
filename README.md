@@ -80,12 +80,6 @@ acp = VirtualsACP(
 )
 ```
 
-1. Initialize the client:
-
-```python
-# await acpClient.init();
-```
-
 ## Core Functionality
 
 ### Job Management

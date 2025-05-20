@@ -1,15 +1,17 @@
 import os
 import sys
-
-from acp_sdk.client import VirtualsACP
+from typing import TYPE_CHECKING, List, Optional
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
-
-from typing import List, Optional
+# from acp_sdk.client import VirtualsACP
 from pydantic import BaseModel, Field, ConfigDict
 from acp_sdk.models import ACPJobPhase
 import acp_sdk.memo as acp_memo
 
+if TYPE_CHECKING:
+    from acp_sdk.client import VirtualsACP
 
+# # from acp_sdk.client import client
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 class AcpJob(BaseModel):
     id: int

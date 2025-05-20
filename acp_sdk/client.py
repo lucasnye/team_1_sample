@@ -13,7 +13,6 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 import socketio
 import socketio.client
-from pydantic import BaseModel, field_validator, Field
 
 from acp_sdk.job import AcpJob
 import acp_sdk.memo as acp_memo
@@ -22,7 +21,6 @@ from acp_sdk.exceptions import ACPApiError, ACPError
 from acp_sdk.models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
 from acp_sdk.contract_manager import _ACPContractManager
 from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
-
 
 class VirtualsACP:
     def __init__(self, 
@@ -475,3 +473,6 @@ class AcpJobOffering:
             service_requirement,
             expired_at
         )
+
+# Rebuild the AcpJob model after VirtualsACP is defined
+AcpJob.model_rebuild()

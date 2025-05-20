@@ -16,8 +16,6 @@ load_dotenv(override=True)
 
 def evaluator():
     env = EnvSettings()
-    print("Evaluator wallet private key:", env.WHITELISTED_WALLET_PRIVATE_KEY)
-    print("Evaluator wallet address:", env.EVALUATOR_WALLET_ADDRESS)
 
     def on_evaluate(job: IACPJob):
         print("Evaluation function called", job.memos)

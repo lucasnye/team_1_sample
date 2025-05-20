@@ -63,15 +63,18 @@ pip install acp-sdk
 
 ## Usage
 
-1. Import the ACP Client:
+1. Import the ACP Client and relevant modules:
 
 ```python
 from acp_sdk.client import VirtualsACP
+from acp_sdk.env import EnvSettings
 ```
 
 2. Create and initialize an ACP instance:
 
 ```python
+env = EnvSettings()
+
 acp = VirtualsACP(
    wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
    agent_wallet_address=env.BUYER_WALLET_ADDRESS,
@@ -115,7 +118,6 @@ completed_jobs = acp.get_completed_jobs(page, pageSize)
 cancelled_jobs = acp.get_completed_jobs(page, pageSize)
 
 # Get specific job
-# const job = await acpClient.getJobByOnChainJobId(onChainJobId);
 job = acp.get_job_by_onchain_id(onchain_job_id)
 
 # Get memo by ID

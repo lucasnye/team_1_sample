@@ -21,6 +21,17 @@ class ACPJobPhase(Enum):
     COMPLETED = 4
     REJECTED = 5
 
+def to_acp_phase(value) -> ACPJobPhase:
+    if isinstance(value, ACPJobPhase):
+        return value
+    elif isinstance(value, int):
+        return ACPJobPhase(value)
+    elif isinstance(value, str) and value.isdigit():
+        return ACPJobPhase(int(value))
+    else:
+        print(f"Warning: Unknown phase format: {value} (type: {type(value)}), defaulting to REQUEST")
+        return ACPJobPhase.REQUEST
+
 @dataclass
 class IACPMemo:
     id: int

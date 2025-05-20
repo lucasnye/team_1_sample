@@ -22,9 +22,9 @@ from .exceptions import (
     ACPContractError,
     TransactionFailedError
 )
-from .memo import AcpMemo
 from .job import AcpJob
 from .client import VirtualsACP
+from .memo import AcpMemo
 from .abi import ACP_ABI, ERC20_ABI
 
 __all__ = [

@@ -15,12 +15,14 @@ import socketio
 import socketio.client
 from pydantic import BaseModel, field_validator, Field
 
-from utils.job_helpers import build_acp_job
-# Relative imports within the package
-from .configs import ACPContractConfig, DEFAULT_CONFIG
-from .exceptions import ACPApiError, ACPContractError, ACPError
-from .models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
-from .contract_manager import _ACPContractManager # Import the refactored class
+from acp_sdk.job import AcpJob
+import acp_sdk.memo as acp_memo
+
+from acp_sdk.exceptions import ACPApiError, ACPError
+from acp_sdk.models import  ACPJobPhase, IACPJob, MemoType, IACPAgent
+from acp_sdk.contract_manager import _ACPContractManager
+from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
+
 
 class VirtualsACP:
     def __init__(self, 
@@ -67,16 +69,45 @@ class VirtualsACP:
 
     def _on_evaluate(self, data):
         if self.on_evaluate:
-            job = build_acp_job(self, data)
             try:
+                memos = [acp_memo.AcpMemo(
+                    id=memo["memoId"], 
+                    type=int(memo["memoType"]),
+                    content=memo["content"],
+                    next_phase=memo["nextPhase"],
+                ) for memo in data["memos"]]
+                
+                job = AcpJob(
+                    acp_client=self,
+                    id=data["onChainJobId"],
+                    provider_address=data["sellerAddress"],
+                    memos=memos,
+                    phase=data["phase"]
+                )
                 self.on_evaluate(job)
             except Exception as e:
                 print(f"Error in onEvaluate handler: {e}")
 
     def _on_new_task(self, data):
         if self.on_new_task:
-            job = build_acp_job(self, data)
+            print("Received new task:", data["memos"])
             try:
+                memos = [acp_memo.AcpMemo(
+                    id=memo["memoId"], 
+                    type=int(memo["memoType"]),
+                    content=memo["content"],
+                    next_phase=memo["nextPhase"],
+                ) for memo in data["memos"]]
+                
+                
+                job = AcpJob(
+                    acp_client=self,
+                    id=data["onChainJobId"],
+                    provider_address=data["sellerAddress"],
+                    memos=memos,
+                    phase=ACPJobPhase(int(data["phase"]))
+                )
+                
                 self.on_new_task(job)
             except Exception as e:
                 print(f"Error in onNewTask handler: {e}")
@@ -312,8 +343,8 @@ class VirtualsACP:
     def get_job_details(self, job_id: int) -> IACPJob:
         return self.contract_manager.get_job_details(job_id)
 
-    def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List[IACPJob]:
-        url = f"{self.acp_api_url}/jobs/active?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+    def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
+        url = f"{self.acp_api_url}/jobs/active?pagination[page]={page}&pagination[pageSize]={pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -322,7 +353,19 @@ class VirtualsACP:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            return data.get("data", [])
+            
+            jobs = []
+            for job in data.get("data", []):
+                print(job)
+                
+                jobs.append(AcpJob(
+                    acp_client=self,
+                    id=job["onChainJobId"],
+                    provider_address=job["sellerAddress"],
+                    memos=[],
+                    phase=ACPJobPhase(1)
+                ))
+            return jobs 
         except Exception as e:
             raise ACPApiError(f"Failed to get active jobs: {e}")
         

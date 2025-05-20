@@ -7,10 +7,10 @@ import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from acp_sdk.client import VirtualsACP
-from acp_sdk.models import ACPJobPhase, IACPJob
+from acp_sdk.models import ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
-from acp_sdk.utils.job_actions import respond_job, deliver_job
 from acp_sdk.env import EnvSettings
+from acp_sdk.job import AcpJob
 
 from dotenv import load_dotenv
 
@@ -19,15 +19,19 @@ load_dotenv()
 def seller():
     env = EnvSettings()
 
-    def on_new_task(job: IACPJob):
-        # Convert job.phase to ACPJobPhase enum if it's an integer
+    def on_new_task(job: AcpJob):
+        print(job,'job')
+        # Handle phase conversion regardless of input type
+        
         job_phase = ACPJobPhase(job.phase) if isinstance(job.phase, int) else job.phase
-        if job_phase == ACPJobPhase.REQUEST:
+        if job.phase == ACPJobPhase.REQUEST:
+            print(job,'job_phase')
             # Check if there's a memo that indicates next phase is NEGOTIATION
             for memo in job.memos:
                 next_phase = ACPJobPhase(memo.next_phase) if isinstance(memo.next_phase, int) else memo.next_phase
                 if next_phase == ACPJobPhase.NEGOTIATION:
-                    respond_job(acp_client,job.id, job.memos, True)
+                    print("negotiation")
+                    job.respond(True)
                     break
         elif job_phase == ACPJobPhase.TRANSACTION:
             # Check if there's a memo that indicates next phase is EVALUATION
@@ -39,12 +43,7 @@ def seller():
                         "type": "url",
                         "value": "https://example.com"
                     }
-                    deliver_job(
-                        acp_client,
-                        job.id,
-                        job.memos,
-                        json.dumps(delivery_data),
-                    )
+                    job.deliver(json.dumps(delivery_data))
                     break
 
     # Initialize the ACP client

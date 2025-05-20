@@ -208,7 +208,6 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during sign_memo: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
                 

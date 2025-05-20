@@ -42,7 +42,6 @@ def test_buyer():
     
     agents = acp.browse_agents(keyword="meme", cluster="999")
     
-    
     job_offering = agents[1].offerings[0]
     
     job_id = job_offering.initiate_job(

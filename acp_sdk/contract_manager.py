@@ -8,8 +8,6 @@ from typing import Optional, Tuple
 import os
 import sys
 
-from acp_sdk.job import AcpJob
-from acp_sdk.memo import AcpMemo
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 from eth_account import Account

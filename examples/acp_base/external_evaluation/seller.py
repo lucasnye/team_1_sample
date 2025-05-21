@@ -1,25 +1,17 @@
-from collections.abc import Callable
-import sys
-import os
 import time
 import json
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-
-from acp_sdk.client import VirtualsACP
-from acp_sdk.models import ACPJobPhase
+from acp_sdk import VirtualsACP, ACPJob, ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.env import EnvSettings
-from acp_sdk.job import AcpJob
 
 from dotenv import load_dotenv
-
 load_dotenv(override=True)
 
 def seller():
     env = EnvSettings()
 
-    def on_new_task(job: AcpJob):
+    def on_new_task(job: ACPJob):
         # Handle phase conversion regardless of input type
         if job.phase == ACPJobPhase.REQUEST:
             # Check if there's a memo that indicates next phase is NEGOTIATION

@@ -7,7 +7,7 @@ from jsonschema import ValidationError, validate
 if TYPE_CHECKING:
     from acp_sdk.client import VirtualsACP
 
-class AcpJobOffering(BaseModel):
+class ACPJobOffering(BaseModel):
     acp_client: "VirtualsACP"
     provider_address: str
     type: str

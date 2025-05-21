@@ -5,7 +5,7 @@ from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
 
 if TYPE_CHECKING:
-    from acp_sdk.offering import AcpJobOffering
+    from acp_sdk.offering import ACPJobOffering
 
 class MemoType(Enum):
     MESSAGE = 0
@@ -29,7 +29,7 @@ class IACPAgent:
     name: str
     description: str
     wallet_address: str # Checksummed address
-    offerings: List["AcpJobOffering"] = field(default_factory=list)
+    offerings: List["ACPJobOffering"] = field(default_factory=list)
     twitter_handle: Optional[str] = None
     # Full fields from TS for completeness, though browse_agent returns a subset
     document_id: Optional[str] = None

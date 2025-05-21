@@ -4,21 +4,17 @@ import json
 import time
 from datetime import datetime
 from typing import Optional, Tuple
-
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+import requests
 
 from eth_account import Account
-import requests
+from eth_account.messages import encode_defunct
 from web3 import Web3
 from web3.contract import Contract
 
-from abi import ACP_ABI, ERC20_ABI
-from configs import ACPContractConfig
-from models import ACPJobPhase, MemoType
-from eth_account.messages import encode_defunct
+from acp_sdk.abi import ACP_ABI, ERC20_ABI
+from acp_sdk.configs import ACPContractConfig
+from acp_sdk.models import ACPJobPhase, MemoType
+
 
 
 class _ACPContractManager:

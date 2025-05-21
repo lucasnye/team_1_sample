@@ -1,23 +1,16 @@
-import sys
-import os
 import time
 
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-from acp_sdk.client import VirtualsACP
-from acp_sdk.models import ACPJobPhase
-from acp_sdk.job import AcpJob
+from acp_sdk import VirtualsACP, ACPJob, ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
-
 load_dotenv(override=True)
 
 def evaluator():
     env = EnvSettings()
 
-    def on_evaluate(job: AcpJob):
+    def on_evaluate(job: ACPJob):
         # Find the deliverable memo
         for memo in job.memos:
             print(memo.next_phase, ACPJobPhase.COMPLETED)

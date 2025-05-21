@@ -1,17 +1,9 @@
-import sys
-import os
-
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
 from acp_sdk.client import VirtualsACP
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
-
 load_dotenv(override=True)
-
 
 def test_helper_functions():
     env = EnvSettings()

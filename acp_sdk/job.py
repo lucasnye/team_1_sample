@@ -1,19 +1,17 @@
-import os
-import sys
 from typing import TYPE_CHECKING, List, Optional
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from pydantic import BaseModel, Field, ConfigDict
-import acp_sdk.memo as acp_memo
+
+from acp_sdk.memo import ACPMemo
 from acp_sdk.models import ACPJobPhase
 
 if TYPE_CHECKING:
     from acp_sdk.client import VirtualsACP
 
-class AcpJob(BaseModel):
+class ACPJob(BaseModel):
     id: int
     provider_address: str
     acp_client: "VirtualsACP"
-    memos: List[acp_memo.AcpMemo] = Field(default_factory=list)
+    memos: List[ACPMemo] = Field(default_factory=list)
     phase: ACPJobPhase
     
     model_config = ConfigDict(arbitrary_types_allowed=True)

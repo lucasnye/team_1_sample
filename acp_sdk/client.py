@@ -486,7 +486,6 @@ class VirtualsACP:
                 raise ACPApiError(data["error"]["message"])
             
             print(data.get("data", {}))
-            # TODO: add memo type
             return AcpMemo(
                 id=data.get("data", {}).get("id"),
                 type=int(data.get("data", {}).get("memoType")),

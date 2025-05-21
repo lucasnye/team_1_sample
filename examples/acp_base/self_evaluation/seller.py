@@ -4,11 +4,9 @@ import os
 import time
 import json
 
-from acp_python.utils.job_actions import deliver_job, respond_job
-from acp_sdk.job import AcpJob
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
+from acp_sdk.job import AcpJob
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG

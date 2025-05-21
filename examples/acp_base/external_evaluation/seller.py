@@ -14,7 +14,7 @@ from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 def seller():
     env = EnvSettings()

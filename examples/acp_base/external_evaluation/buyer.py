@@ -13,7 +13,6 @@ from acp_sdk.utils.job_actions import pay_job
 from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
-from pprint import pprint
 
 load_dotenv(override=True)
 
@@ -49,7 +48,7 @@ def test_buyer():
         price=float(2),
         service_requirement="Help me generate a meme",
         expired_at=datetime.now() + timedelta(days=1),
-        evaluator_address=env.EVALUATOR_WALLET_ADDRESS
+        # evaluator_address=env.EVALUATOR_WALLET_ADDRESS
     )
     
     print(f"Job {job_id} initiated")

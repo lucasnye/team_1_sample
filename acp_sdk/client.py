@@ -1,6 +1,8 @@
 # virtuals_acp/client.py
 
 import json
+import signal
+import sys
 import requests
 import time
 from datetime import datetime, timezone, timedelta
@@ -130,18 +132,20 @@ class VirtualsACP:
                 auth=auth_data,
             )
             
+            def signal_handler(sig, frame):
+                self.sio.disconnect()
+                sys.exit(0)
+                
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+            
         except Exception as e:
             print(f"Failed to connect to socket server: {e}")
 
-    def disconnect(self) -> None:
-        """Disconnect from the socket server."""
-        if self.sio.connected:
-            self.sio.disconnect()
-
     def __del__(self):
         """Cleanup when the object is destroyed."""
-        self.disconnect()
-
+        self.sio.disconnect()
+        
     @property
     def agent_address(self) -> str:
         return self._agent_wallet_address

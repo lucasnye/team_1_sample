@@ -44,7 +44,8 @@ def test_buyer():
     job_id = job_offering.initiate_job(
         price=float(2),
         service_requirement="Help me generate a meme",
-        expired_at=datetime.now() + timedelta(days=1)
+        expired_at=datetime.now() + timedelta(days=1),
+        # evaluator_address=env.EVALUATOR_WALLET_ADDRESS
     )
     
     print(f"Job {job_id} initiated")

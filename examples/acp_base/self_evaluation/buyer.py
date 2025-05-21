@@ -38,7 +38,7 @@ def test_buyer():
                 # Evaluate the deliverable by accepting it
                 job.evaluate(True)
                 break
-            
+
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.BUYER_WALLET_ADDRESS,
@@ -46,20 +46,18 @@ def test_buyer():
         on_new_task=on_new_task,
         on_evaluate=on_evaluate
     )
-    
-    agents = acp.browse_agents(keyword="meme", cluster="999")
-    
-    job_offering = agents[1].offerings[0]
-    
+
+    job_offering = agents[0].offerings[0]
     job_id = job_offering.initiate_job(
         price=float(2),
         service_requirement="Help me generate a meme",
         expired_at=datetime.now() + timedelta(days=1),
         # evaluator_address=env.BUYER_WALLET_ADDRESS
     )
-    
+
     print(f"Job {job_id} initiated")
     
+
     while True:
         print("Listening for next steps...")
         time.sleep(30)

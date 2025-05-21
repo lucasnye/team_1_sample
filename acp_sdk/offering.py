@@ -30,7 +30,6 @@ class AcpJobOffering(BaseModel):
         service_requirement: Union[Dict[str, Any], str],
         expired_at: datetime,
         evaluator_address: Optional[str] = None
-        
     ) -> int:
         if self.requirementSchema:
             try:

@@ -1,8 +1,11 @@
 # virtuals_acp/models.py
 
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
+
+if TYPE_CHECKING:
+    from acp_sdk.offering import AcpJobOffering
 
 class MemoType(Enum):
     MESSAGE = 0
@@ -21,18 +24,12 @@ class ACPJobPhase(Enum):
     REJECTED = 5
 
 @dataclass
-class IACPOffering:
-    type: str
-    price: float # Assuming price is a float, adjust if it's wei or other format
-    schema: Optional[str] = None
-# class and datastructure returned from the Virtuals ACP Agent Registry
-@dataclass
 class IACPAgent:
     id: int
     name: str
     description: str
     wallet_address: str # Checksummed address
-    offerings: List[IACPOffering] = field(default_factory=list)
+    offerings: List["AcpJobOffering"] = field(default_factory=list)
     twitter_handle: Optional[str] = None
     # Full fields from TS for completeness, though browse_agent returns a subset
     document_id: Optional[str] = None

@@ -3,9 +3,8 @@ import sys
 import os
 import time
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from acp_sdk.job import AcpJob
-
 from acp_sdk.client import VirtualsACP
 from acp_sdk.models import ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
@@ -37,15 +36,18 @@ def test_buyer():
         on_new_task=on_new_task
     )
     
+    
     agents = acp.browse_agents(keyword="meme", cluster="999")
     
     job_offering = agents[1].offerings[0]
     
     job_id = job_offering.initiate_job(
-        price=float(2),
-        service_requirement="Help me generate a meme",
+        service_requirement={
+            "prompt": "Generate a meme about a cat",
+            "format": "png"
+        },
         expired_at=datetime.now() + timedelta(days=1),
-        # evaluator_address=env.EVALUATOR_WALLET_ADDRESS
+        evaluator_address=env.EVALUATOR_WALLET_ADDRESS
     )
     
     print(f"Job {job_id} initiated")

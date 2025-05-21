@@ -1,8 +1,6 @@
 # virtuals_acp/client.py
 
 import json
-import traceback
-from jsonschema import ValidationError, validate
 import requests
 import time
 from datetime import datetime, timezone, timedelta
@@ -21,6 +19,7 @@ from acp_sdk.exceptions import ACPApiError, ACPError
 from acp_sdk.models import  ACPJobPhase, MemoType, IACPAgent
 from acp_sdk.contract_manager import _ACPContractManager
 from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
+from acp_sdk.offering import AcpJobOffering
 
 class VirtualsACP:
     def __init__(self, 
@@ -67,9 +66,10 @@ class VirtualsACP:
 
     def _on_evaluate(self, data):
         if self.on_evaluate:
+            print(f"Evaluating job {data}")
             try:
                 memos = [AcpMemo(
-                    id=memo["memoId"], 
+                    id=memo["id"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
@@ -77,8 +77,8 @@ class VirtualsACP:
                 
                 job = AcpJob(
                     acp_client=self,
-                    id=data["onChainJobId"],
-                    provider_address=data["sellerAddress"],
+                    id=data["id"],
+                    provider_address=data["providerAddress"],
                     memos=memos,
                     phase=data["phase"]
                 )
@@ -91,7 +91,7 @@ class VirtualsACP:
             print("Received new task:", data["memos"])
             try:
                 memos = [AcpMemo(
-                    id=memo["memoId"], 
+                    id=memo["id"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
@@ -100,8 +100,8 @@ class VirtualsACP:
                 
                 job = AcpJob(
                     acp_client=self,
-                    id=data["onChainJobId"],
-                    provider_address=data["sellerAddress"],
+                    id=data["id"],
+                    provider_address=data["providerAddress"],
                     memos=memos,
                     phase=data["phase"]
                 )
@@ -192,11 +192,11 @@ class VirtualsACP:
 
     def initiate_job(
         self,
-        price: float,
         provider_address: str,
         service_requirement: str | Dict[str, Any],
         expired_at: Optional[datetime] = None,
         evaluator_address: Optional[str] = None,
+        price: Optional[float] = None,
     ) -> int:
         if expired_at is None:
             expired_at = datetime.now(timezone.utc) + timedelta(days=1)
@@ -235,7 +235,6 @@ class VirtualsACP:
             except Exception as e:
                 if (attempt == retry_count - 1):
                     print(f"Error in create_job function: {e}")
-                    print(traceback.format_exc())
                 if attempt < retry_count - 1:
                     time.sleep(retry_delay) 
                 else:
@@ -259,10 +258,12 @@ class VirtualsACP:
             "clientAddress": self.agent_address,
             "providerAddress": provider_address,
             "description": service_requirement,
-            "price": price,
             "expiredAt": expired_at.astimezone(timezone.utc).isoformat(),
             "evaluatorAddress": evaluator_address
         }
+        
+        if price:
+            payload["price"] = price
         
         
         requests.post(
@@ -294,7 +295,6 @@ class VirtualsACP:
             return tx_hash
         except Exception as e:
             print(f"Error in respond_to_job_memo: {e}")
-            print(traceback.format_exc())
             raise
     def pay_for_job(self, job_id: int, memo_id: int, amount_in_eth: Union[float, str], reason: Optional[str] = "") -> Tuple[str, str]:
         amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
@@ -308,11 +308,13 @@ class VirtualsACP:
 
         sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
         time.sleep(10)
+        
+        reason = f"{reason if reason else f'Job {job_id} paid.'}"
 
         create_memo_tx_hash = self.contract_manager.create_memo(
             self.agent_address,
             job_id,
-            f"Job {job_id} paid. {reason if reason else ''}",
+            reason,
             MemoType.MESSAGE,
             is_secured=False,
             next_phase=ACPJobPhase.EVALUATION
@@ -350,15 +352,22 @@ class VirtualsACP:
             response.raise_for_status()
             data = response.json()
             
-            
             jobs = []
-            # TODO: add memos to the job
+            
             for job in data.get("data", []):
+                memos = []
+                for memo in job.get("memos", []):
+                    memos.append(AcpMemo(
+                        id=memo.get("id"),
+                        type=int(memo.get("memoType")),
+                        content=memo.get("content"),
+                        next_phase=int(memo.get("nextPhase"))
+                    ))
                 jobs.append(AcpJob(
                     acp_client=self,
-                    id=job.get("onChainJobId"),
-                    provider_address=job.get("sellerAddress"),
-                    memos=[],
+                    id=job.get("id"),
+                    provider_address=job.get("providerAddress"),
+                    memos=memos,
                     phase=job.get("phase")
                 ))
             return jobs 
@@ -377,13 +386,21 @@ class VirtualsACP:
             response.raise_for_status()
             data = response.json()
             jobs = []
-            # TODO: add memos to the job
+            
             for job in data.get("data", []):
+                memos = []
+                for memo in job.get("memos", []):
+                    memos.append(AcpMemo(
+                        id=memo.get("id"),
+                        type=int(memo.get("memoType")),
+                        content=memo.get("content"),
+                        next_phase=int(memo.get("nextPhase"))
+                    ))
                 jobs.append(AcpJob(
                     acp_client=self,
-                    id=job.get("onChainJobId"),
-                    provider_address=job.get("sellerAddress"),
-                    memos=[],
+                    id=job.get("id"),
+                    provider_address=job.get("providerAddress"),
+                    memos=memos,
                     phase=job.get("phase")
                 ))
             return jobs
@@ -401,13 +418,21 @@ class VirtualsACP:
             response.raise_for_status()
             data = response.json()
             jobs = []
-            # TODO: add memos to the job
+            
             for job in data.get("data", []):
+                memos = []
+                for memo in job.get("memos", []):
+                    memos.append(AcpMemo(
+                        id=memo.get("id"),
+                        type=int(memo.get("memoType")),
+                        content=memo.get("content"),
+                        next_phase=int(memo.get("nextPhase"))
+                    ))
                 jobs.append(AcpJob(
                     acp_client=self,
-                    id=job.get("onChainJobId"),
-                    provider_address=job.get("sellerAddress"),
-                    memos=[],
+                    id=job.get("id"),
+                    provider_address=job.get("providerAddress"),
+                    memos=memos,
                     phase=job.get("phase")
                 ))
             return jobs
@@ -428,15 +453,19 @@ class VirtualsACP:
             if data.get("error"):
                 raise ACPApiError(data["error"]["message"])
             
-            print(data)
-            
-             
-            # TODO: add memos to the job
+            memos = []
+            for memo in data.get("data", {}).get("memos", []):
+                memos.append(AcpMemo(
+                    id=memo.get("id"),
+                    type=int(memo.get("memoType")),
+                    content=memo.get("content"),
+                    next_phase=int(memo.get("nextPhase"))
+                ))
             return AcpJob(
                 acp_client=self,
-                id=data.get("data", {}).get("onChainJobId"),
-                provider_address=data.get("data", {}).get("sellerAddress"),
-                memos=[],
+                id=data.get("data", {}).get("id"),
+                provider_address=data.get("data", {}).get("providerAddress"),
+                memos=memos,
                 phase=data.get("data", {}).get("phase")
             )
         except Exception as e:
@@ -456,61 +485,19 @@ class VirtualsACP:
             if data.get("error"):
                 raise ACPApiError(data["error"]["message"])
             
-            
+            print(data.get("data", {}))
             # TODO: add memo type
             return AcpMemo(
-                id=data.get("data", {}).get("memoId"),
-                type=0,
+                id=data.get("data", {}).get("id"),
+                type=int(data.get("data", {}).get("memoType")),
                 content=data.get("data", {}).get("content"),
-                next_phase=0
+                next_phase=int(data.get("data", {}).get("nextPhase"))
             )
             
         except Exception as e:
             raise ACPApiError(f"Failed to get memo by ID: {e}")
 
-class AcpJobOffering:
-    def __init__(
-        self,
-        acp_client: VirtualsACP,
-        provider_address: str,
-        type: str,
-        price: float,
-        requirementSchema: str | Dict[str, Any]
-    ):
-        self.acp_client = acp_client
-        self.provider_address = provider_address
-        self.type = type
-        self.price = price
-        try:
-            self.requirementSchema = json.loads(json.dumps(requirementSchema))
-        except json.JSONDecodeError:
-            self.requirementSchema = None
-            
-    def initiate_job(
-        self,
-        price: float,
-        service_requirement: Union[Dict[str, Any], str],
-        expired_at: datetime
-    ) -> int:
-        if self.requirementSchema:
-            try:
-                # If service_requirement is a string, parse it as JSON
-                if isinstance(service_requirement, str):
-                    service_requirement = json.loads(service_requirement)
-                
-                validate(instance=service_requirement, schema=self.requirementSchema)
-            except ValidationError as e:
-                raise ValueError(f"Invalid service requirement: {str(e)}")
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid JSON in service requirement: {str(e)}")
-            
-        return self.acp_client.initiate_job(
-            price,
-            self.provider_address,
-            service_requirement,
-            expired_at
-        )
-
 # Rebuild the AcpJob model after VirtualsACP is defined
 AcpJob.model_rebuild()
 AcpMemo.model_rebuild()
+AcpJobOffering.model_rebuild()

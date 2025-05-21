@@ -1,10 +1,10 @@
 import os
 import sys
 from typing import TYPE_CHECKING, List, Optional
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from pydantic import BaseModel, Field, ConfigDict
-from acp_sdk.models import ACPJobPhase
 import acp_sdk.memo as acp_memo
+from acp_sdk.models import ACPJobPhase
 
 if TYPE_CHECKING:
     from acp_sdk.client import VirtualsACP

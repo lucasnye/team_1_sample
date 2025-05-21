@@ -19,6 +19,7 @@ from .exceptions import (
 )
 from .job import AcpJob
 from .client import VirtualsACP
+from .offering import AcpJobOffering
 from .memo import AcpMemo
 from .abi import ACP_ABI, ERC20_ABI
 
@@ -39,7 +40,8 @@ __all__ = [
     "ACP_ABI",
     "ERC20_ABI",
     "AcpJob",
-    "AcpMemo"
+    "AcpMemo",
+    "AcpJobOffering"
 ]
 
 __version__ = "0.1.0"

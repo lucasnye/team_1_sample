@@ -3,7 +3,6 @@
 import json
 import time
 from datetime import datetime
-import traceback
 from typing import Optional, Tuple
 
 import os
@@ -42,7 +41,6 @@ class _ACPContractManager:
             response = requests.post(f"{self.config.acp_api_url}/acp-agent-wallets/trx-result", json={"userOpHash": hash_value})
             return response.json()
         except Exception as e:
-            print(traceback.format_exc())
             raise Exception(f"Failed to get job_id {e}")
     
     def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> Tuple[dict, str]:
@@ -102,8 +100,7 @@ class _ACPContractManager:
                 return {"txHash": response.json().get("data", {}).get("userOpHash", "")}
             except Exception as e:
                 if (retries == 1):
-                    print(f"{e}")
-                    print(traceback.format_exc())
+                    print(f"Failed to create job: {e}")
                 retries -= 1
                 time.sleep(2 * (3 - retries))
                 
@@ -139,7 +136,6 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during approve_allowance: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
 
@@ -168,12 +164,11 @@ class _ACPContractManager:
                 if (response.json().get("error")):
                     raise Exception(f"Failed to create memo {response.json().get('error').get('status')}, Message: {response.json().get('error').get('message')}")
                 
-                return { "txHash": response.json().get("txHash", response.json().get("id", "")), "memoId": response.json().get("memoId", "")}
+                return { "txHash": response.json().get("txHash", response.json().get("id", "")), "id": response.json().get("id", "")}
             except Exception as e:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during create_memo: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
 
@@ -242,7 +237,6 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during set_budget: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
                 

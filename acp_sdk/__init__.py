@@ -4,11 +4,6 @@ from .models import (
     IACPAgent,
     ACPJobPhase,
     MemoType,
-    IACPJob,
-    IACPMemo,
-    IMemo,
-    IJob,
-    JobResult
 )
 from .configs import (
     ACPContractConfig,
@@ -22,9 +17,10 @@ from .exceptions import (
     ACPContractError,
     TransactionFailedError
 )
-from .memo import AcpMemo
 from .job import AcpJob
 from .client import VirtualsACP
+from .offering import AcpJobOffering
+from .memo import AcpMemo
 from .abi import ACP_ABI, ERC20_ABI
 
 __all__ = [
@@ -33,8 +29,6 @@ __all__ = [
     "ACPJobPhase",
     "MemoType",
     "IACPOffering",
-    "IACPJob",
-    "IACPMemo",
     "ACPContractConfig",
     "BASE_SEPOLIA_CONFIG",
     "BASE_MAINNET_CONFIG",
@@ -45,11 +39,9 @@ __all__ = [
     "TransactionFailedError",
     "ACP_ABI",
     "ERC20_ABI",
-    "IMemo",
-    "IJob",
-    "JobResult",
     "AcpJob",
-    "AcpMemo"
+    "AcpMemo",
+    "AcpJobOffering"
 ]
 
 __version__ = "0.1.0"

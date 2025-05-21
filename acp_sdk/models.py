@@ -1,9 +1,11 @@
 # virtuals_acp/models.py
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
-from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from acp_sdk.offering import AcpJobOffering
 
 class MemoType(Enum):
     MESSAGE = 0
@@ -22,45 +24,12 @@ class ACPJobPhase(Enum):
     REJECTED = 5
 
 @dataclass
-class IACPMemo:
-    id: int
-    job_id: int
-    sender_address: str
-    type: MemoType
-    content: str
-    next_phase: ACPJobPhase
-    is_secured: bool
-    # raw_data: Dict[str, Any] # To store the full memo data from contract if needed
-
-@dataclass
-class IACPJob:
-    id: int
-    client_address: str
-    provider_address: str
-    evaluator_address: str
-    budget: int  # in wei
-    amount_claimed: int # in wei
-    phase: ACPJobPhase
-    memo_count: int
-    expired_at_timestamp: int
-    memos: List[IACPMemo] = field(default_factory=list)
-    # raw_data: Dict[str, Any] # To store the full job data from contract
-
-
-# should this be description and price and maybe rename it to ACP Task?
-@dataclass
-class IACPOffering:
-    type: str
-    price: float # Assuming price is a float, adjust if it's wei or other format
-    schema: Optional[str] = None
-# class and datastructure returned from the Virtuals ACP Agent Registry
-@dataclass
 class IACPAgent:
     id: int
     name: str
     description: str
     wallet_address: str # Checksummed address
-    offerings: List[IACPOffering] = field(default_factory=list)
+    offerings: List["AcpJobOffering"] = field(default_factory=list)
     twitter_handle: Optional[str] = None
     # Full fields from TS for completeness, though browse_agent returns a subset
     document_id: Optional[str] = None
@@ -74,24 +43,3 @@ class IACPAgent:
     virtual_agent_id: Optional[str] = None
 
 
-class IMemo(TypedDict):
-    content: str
-    memoType: MemoType
-    isSecured: bool
-    nextPhase: int
-    jobId: int
-    numApprovals: int
-    sender: str
-    
-class IJob(TypedDict):
-    id: int
-    client: str
-    provider: str
-    budget: int
-    amountClaimed: int
-    phase: int
-    memoCount: int
-    expiredAt: int
-    evaluatorCount: int
-    
-JobResult = Tuple[int, str, str, str, str, str, str, str, int]

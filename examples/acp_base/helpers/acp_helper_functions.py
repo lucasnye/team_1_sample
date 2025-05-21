@@ -38,7 +38,7 @@ def test_helper_functions():
     print(cancelled_jobs or "No cancelled jobs found.")
 
     if completed_jobs:
-        onchain_job_id = completed_jobs[0].get("onChainJobId")
+        onchain_job_id = completed_jobs[0].get("id")
         if onchain_job_id:
             job = acp.get_job_by_onchain_id(onchain_job_id=onchain_job_id)
             print(f"\n📄 Job Details (Job ID: {onchain_job_id}):")
@@ -46,7 +46,7 @@ def test_helper_functions():
 
         memos = completed_jobs[0].get("memos", [])
         if memos:
-            memo_id = memos[0].get("memoId")
+            memo_id = memos[0].get("id")
             memo = acp.get_memo_by_id(onchain_job_id=onchain_job_id, memo_id=memo_id)
             print(f"\n📝 Memo Details (Job ID: {onchain_job_id}, Memo ID: {memo_id}):")
             print(memo)

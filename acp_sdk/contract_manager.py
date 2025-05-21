@@ -3,11 +3,11 @@
 import json
 import time
 from datetime import datetime
-import traceback
 from typing import Optional, Tuple
 
 import os
 import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 from eth_account import Account
@@ -17,7 +17,7 @@ from web3.contract import Contract
 
 from abi import ACP_ABI, ERC20_ABI
 from configs import ACPContractConfig
-from models import ACPJobPhase, MemoType, IACPJob, IMemo # ACPMemo might be useful here too
+from models import ACPJobPhase, MemoType
 from eth_account.messages import encode_defunct
 
 
@@ -39,7 +39,6 @@ class _ACPContractManager:
             response = requests.post(f"{self.config.acp_api_url}/acp-agent-wallets/trx-result", json={"userOpHash": hash_value})
             return response.json()
         except Exception as e:
-            print(traceback.format_exc())
             raise Exception(f"Failed to get job_id {e}")
     
     def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> Tuple[dict, str]:
@@ -99,8 +98,7 @@ class _ACPContractManager:
                 return {"txHash": response.json().get("data", {}).get("userOpHash", "")}
             except Exception as e:
                 if (retries == 1):
-                    print(f"{e}")
-                    print(traceback.format_exc())
+                    print(f"Failed to create job: {e}")
                 retries -= 1
                 time.sleep(2 * (3 - retries))
                 
@@ -136,7 +134,6 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during approve_allowance: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
 
@@ -165,12 +162,11 @@ class _ACPContractManager:
                 if (response.json().get("error")):
                     raise Exception(f"Failed to create memo {response.json().get('error').get('status')}, Message: {response.json().get('error').get('message')}")
                 
-                return { "txHash": response.json().get("txHash", response.json().get("id", "")), "memoId": response.json().get("memoId", "")}
+                return { "txHash": response.json().get("txHash", response.json().get("id", "")), "id": response.json().get("id", "")}
             except Exception as e:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during create_memo: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
 
@@ -208,7 +204,6 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during sign_memo: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
                 
@@ -240,56 +235,7 @@ class _ACPContractManager:
                 retries -= 1
                 if retries == 0:
                     print(f"Error during set_budget: {e}")
-                    print(traceback.format_exc())
                     raise
                 time.sleep(2 * (3 - retries))
                 
-
-    def get_job_details(self, job_id: int) -> IACPJob:
-        try:
-            # Call structure: (id, client, provider, budget, amountClaimed, phase, memoCount, expiredAt, evaluator)
-            job_data_tuple = self.contract.functions.jobs(job_id).call()
-            
-            return IACPJob(
-                id=job_data_tuple[0],
-                client_address=job_data_tuple[1],
-                provider_address=job_data_tuple[2],
-                budget=job_data_tuple[3],
-                amount_claimed=job_data_tuple[4],
-                phase=ACPJobPhase(job_data_tuple[5]),
-                memo_count=job_data_tuple[6],
-                expired_at_timestamp=job_data_tuple[7],
-                evaluator_address=job_data_tuple[8],
-                memos=[] # Memos need to be fetched separately using client.get_job_memos
-            )
-        except Exception as e:
-            raise ACPContractError(f"Failed to get job details for job {job_id}: {e}")
         
-    def get_memo_by_job(
-        self,
-        job_id: int,
-        memo_type: Optional[MemoType] = None
-    ) -> Optional[IMemo]:
-        try:
-            memos = self.contract.functions.getAllMemos(job_id).call()
-            
-            if memo_type is not None:
-                filtered_memos = [m for m in memos if m['memoType'] == memo_type]
-                return filtered_memos[-1] if filtered_memos else None
-            else:
-                return memos[-1] if memos else None
-        except Exception as error:
-            raise Exception(f"Failed to get memo by job {error}")
-        
-    def get_memos_for_phase(
-        self,
-        job_id: int,
-        phase: int,
-        target_phase: int
-    ) -> Optional[IMemo]:
-        try:
-            memos = self.contract.functions.getMemosForPhase(job_id, phase).call()
-            target_memos = [m for m in memos if m['nextPhase'] == target_phase]
-            return target_memos[-1] if target_memos else None
-        except Exception as e:
-            raise Exception(f"Failed to get memos for phase {e}")

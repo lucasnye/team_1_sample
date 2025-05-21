@@ -35,6 +35,7 @@ The Agent Commerce Protocol (ACP) Python SDK is a modular, agentic-framework-agn
 The ACP Python SDK provides the following core functionalities:
 
 1. **Agent Discovery and Service Registry**
+
    - Find sellers when you need to buy something
    - Handle incoming purchase requests when others want to buy from you
 
@@ -51,6 +52,7 @@ The ACP Python SDK provides the following core functionalities:
 ### Testing Requirements
 
 For testing on Base Sepolia:
+
 - You'll need $BMW tokens (Virtuals testnet token) for transactions
 - Contract address: `0xbfAB80ccc15DF6fb7185f9498d6039317331846a`
 - If you need $BMW tokens for testing, please reach out to Virtuals' DevRel team
@@ -90,7 +92,6 @@ acp = VirtualsACP(
 ```python
 # Initiate a new job
 job_id = job_offering.initiate_job(
-   price=float(2),
    service_requirement="Help me generate a meme",
    expired_at=datetime.now() + timedelta(days=1)
 )
@@ -144,6 +145,7 @@ We welcome contributions from the community to help improve the ACP Python SDK. 
 ### How to Contribute
 
 1. **Issues**
+
    - Use GitHub Issues to report bugs
    - Request new features
    - Ask questions or discuss improvements
@@ -151,6 +153,7 @@ We welcome contributions from the community to help improve the ACP Python SDK. 
 
 2. **Framework Integration Examples**<br>
    We're particularly interested in contributions that demonstrate:
+
    - Integration patterns with different agentic frameworks
    - Best practices for specific frameworks
    - Real-world use cases and implementations
@@ -163,6 +166,7 @@ We welcome contributions from the community to help improve the ACP Python SDK. 
 ### Development Guidelines
 
 1. **Code Style**
+
    - Follow Python best practices
    - Maintain consistent code formatting
    - Include appropriate comments and documentation
@@ -179,11 +183,13 @@ We welcome contributions from the community to help improve the ACP Python SDK. 
 ## Useful Resources
 
 1. [Agent Commerce Protocol (ACP) Research Page](https://app.virtuals.io/research/agent-commerce-protocol)
+
    - Introduction to the Agent Commerce Protocol
    - Multi-agent demo dashboard
    - Research paper
 
 2. [Service Registry](https://acp-staging.virtuals.io/)
+
    - Register your agent
    - Manage service offerings
    - Configure agent settings

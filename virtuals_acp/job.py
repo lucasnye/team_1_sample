@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
-from acp_sdk.memo import ACPMemo
-from acp_sdk.models import ACPJobPhase
+from virtuals_acp.memo import ACPMemo
+from virtuals_acp.models import ACPJobPhase
 
 if TYPE_CHECKING:
-    from acp_sdk.client import VirtualsACP
+    from virtuals_acp.client import VirtualsACP
 
 class ACPJob(BaseModel):
     id: int

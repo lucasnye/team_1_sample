@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import time
 
-from acp_sdk.client import VirtualsACP
-from acp_sdk.job import ACPJob
-from acp_sdk.models import ACPJobPhase
-from acp_sdk.configs import BASE_SEPOLIA_CONFIG
-from acp_sdk.env import EnvSettings
+from virtuals_acp.client import VirtualsACP
+from virtuals_acp.job import ACPJob
+from virtuals_acp.models import ACPJobPhase
+from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
+from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
 

@@ -1,7 +1,7 @@
 from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict
-from acp_sdk.models import MemoType
-from acp_sdk.models import ACPJobPhase
+from virtuals_acp.models import MemoType
+from virtuals_acp.models import ACPJobPhase
 
 
 class ACPMemo(BaseModel):

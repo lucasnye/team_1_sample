@@ -80,7 +80,8 @@ class VirtualsACP:
                     id=data["id"],
                     provider_address=data["providerAddress"],
                     memos=memos,
-                    phase=data["phase"]
+                    phase=data["phase"],
+                    price=data["price"]
                 )
                 self.on_evaluate(job)
             except Exception as e:
@@ -103,7 +104,8 @@ class VirtualsACP:
                     id=data["id"],
                     provider_address=data["providerAddress"],
                     memos=memos,
-                    phase=data["phase"]
+                    phase=data["phase"],
+                    price=data["price"]
                 )
                 
                 self.on_new_task(job)
@@ -246,6 +248,10 @@ class VirtualsACP:
         if (job_id is None or job_id == ""):
             raise Exception("Failed to create job")
         
+        amount_in_wei = self.w3.to_wei(price, "ether")
+        set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
+        time.sleep(10)
+        
         self.contract_manager.create_memo(
             self.agent_address,
             job_id,
@@ -319,9 +325,6 @@ class VirtualsACP:
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
         time.sleep(10)
 
-        set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
-        time.sleep(10)
-
         sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
         time.sleep(10)
         
@@ -388,14 +391,15 @@ class VirtualsACP:
                         id=memo.get("id"),
                         type=int(memo.get("memoType")),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=int(memo.get("nextPhase")),
                     ))
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs 
         except Exception as e:
@@ -428,7 +432,8 @@ class VirtualsACP:
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs
         except Exception as e:
@@ -460,7 +465,8 @@ class VirtualsACP:
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs
         except Exception as e:
@@ -493,7 +499,8 @@ class VirtualsACP:
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
                 memos=memos,
-                phase=data.get("data", {}).get("phase")
+                phase=data.get("data", {}).get("phase"),
+                price=data.get("data", {}).get("price")
             )
         except Exception as e:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")

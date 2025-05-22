@@ -11,6 +11,7 @@ class ACPJobOffering(BaseModel):
     acp_client: "VirtualsACP"
     provider_address: str
     type: str
+    price: float
     requirementSchema: Optional[Dict[str, Any]] = None
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -48,4 +49,5 @@ class ACPJobOffering(BaseModel):
             service_requirement=service_requirement,
             evaluator_address=evaluator_address,
             expired_at=expired_at,
+            price=self.price
         )

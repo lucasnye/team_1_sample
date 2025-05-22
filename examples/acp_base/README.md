@@ -6,7 +6,6 @@
   <em>Each folder demonstrates a different evaluation or utility pattern.</em>
 </p>
 
-
 ---
 
 ## 📚 Table of Contents
@@ -69,11 +68,11 @@ This directory contains a suite of examples to help you understand and implement
 ## 💡 Helpers
 **Folder:** [`helpers/`](./helpers/)
 
-- **Purpose:** Contains utility functions and shared logic to support agent workflows and reduce code duplication.
+- **Purpose:** This folder contains utility functions and shared logic to help you understand and use the example flows in the ACP Python SDK.
 - **Includes:**
   - Reusable helper functions for common ACP operations
 - **When to use:**
-  - To simplify your main agent scripts and keep your codebase DRY (Don't Repeat Yourself).
+  - To see how typical ACP agent interactions are structured and handled.
 
 <details>
 <summary>See details & code structure</summary>

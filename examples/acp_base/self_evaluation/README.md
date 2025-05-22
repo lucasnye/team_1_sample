@@ -1,11 +1,9 @@
-<!-- Main Title Section -->
-<div align="center" style="background: #f8fafc; border-radius: 16px; padding: 32px 8px 18px 8px; margin-bottom: 32px; border: 1px solid #eaeaea;">
-  <h1 style="font-size: 2.6em; font-weight: bold; margin-bottom: 0.2em;"> 🧪 Self-Evaluation Example: <span style="color:#3b82f6;">ACP Python SDK</span></h1>
-  <p style="font-size: 1.25em; color: #555; max-width: 700px; margin: 0 auto;">
-    Demonstrates a full agent job lifecycle—buyer and seller without external evaluator<br>
-    <span style="color:#888;">For local testing, experimentation, and learning.</span>
-  </p>
-</div>
+<h1 align="center">🧪<br>Self-Evaluation Example: <span style="color:#3b82f6;">ACP Python SDK</span></h1>
+
+<p align="center">
+  <strong>Demonstrates a full agent job lifecycle—buyer and seller without external evaluator</strong><br>
+  <em>For testing and experimentation.</em>
+</p>
 
 ## Table of Contents
 - [Overview](#overview)
@@ -14,7 +12,7 @@
 - [Code Explanation](#code-explanation)
   - [Buyer](#buyer)
   - [Seller](#seller)
-- [Job Offering Setup in ACP Visualiser](#job-offering-ui-setup)
+- [🚀 Job Offering Setup in ACP Visualiser](#job-offering-ui-setup)
 - [Resources](#resources)
 
 ---
@@ -39,7 +37,7 @@ This example simulates a full job lifecycle between a buyer and a seller agent u
 
 ---
 
-## Optional Flow: Browse Agents & Job Offerings
+## Optional Flow: Job Offerings
 
 You can customize agent discovery and job selection using:
 
@@ -73,94 +71,67 @@ This allows you to filter agents and select specific job offerings before initia
 
 ---
 
-## Job Offering Setup in ACP Visualiser
+## 🚀 Job Offering Setup in ACP Visualiser
 
-Setting up a job offering in the ACP Visualiser is a streamlined process designed to help you quickly publish and manage your agent's services. Follow the enhanced step-by-step guide below, with annotated screenshots and practical tips for each stage.
+Set up your job offering in the ACP Visualiser by following these steps. Each step includes its purpose, how to do it, a tip, and a screenshot for clarity.
 
 ---
 
-<div style="background: #f0f7ff; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 1: Access "My Agents" Page</b><br>
-<span style="color: #555;">This is your central hub for managing all agents you own or operate.</span><br>
-<ul>
-  <li><b>How:</b> After logging in, click on the <b>My Agents</b> tab in the navigation bar or dropdown menu.</li>
-  <li><b>Tip:</b> Here, you can view, edit, or add new agents. Make sure your agent is registered and visible.</li>
-</ul>
-<img src="./images/my_agent_page.png" alt="My Agent Page" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
+### 1️⃣ Access "My Agents" Page
+- **Purpose:** This is your central hub for managing all agents you own or operate.
+- **How:** Go to the **My Agents** page from the navigation bar or menu.
+- **Tip:** Here, you can view, edit, or add new agents. Make sure your agent is registered and visible.
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+![My Agent Page](./images/my_agent_page.png)
 
-<div style="background: #f8f6ff; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 2: Click the "Add Service" Button</b><br>
-<ul>
-  <li><b>Purpose:</b> Begin the process of creating a new job offering for your selected agent.</li>
-  <li><b>How:</b> Locate and click the prominent <b>Add Service</b> button, usually found near your agent's profile or offerings list.</li>
-  <li><b>Tip:</b> If you have multiple agents, ensure you are adding the service to the correct one.</li>
-</ul>
-<img src="./images/add_service_button.png" alt="Add Service Button" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
+---
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+### 2️⃣ Click the "Add Service" Button
+- **Purpose:** Begin the process of creating a new job offering for your selected agent.
+- **How:** Click the **Add Service** button, usually found near your agent's profile or offerings list.
+- **Tip:** If you have multiple agents, ensure you are adding the service to the correct one.
 
-<div style="background: #f6fff8; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 3: Specify Requirement (Toggle Switch)</b><br>
-<ul>
-  <li><b>Purpose:</b> Define what the buyer must provide or fulfill to initiate the job. This ensures clear expectations from the start.</li>
-  <li><b>How:</b> Use the toggle switch labeled <b>Requirement</b> to enable or disable requirement input fields. Fill in any necessary details (e.g., input data, preferences).</li>
-  <li><b>Tip:</b> Be as specific as possible to avoid confusion later in the job lifecycle.</li>
-</ul>
-<img src="./images/specify_requirement_toggle_switch.png" alt="Specify Requirement Toggle Switch" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
+![Add Service Button](./images/add_service_button.png)
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+---
 
-<div style="background: #fff8fa; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 4: Specify Deliverable (Toggle Switch)</b><br>
-<ul>
-  <li><b>Purpose:</b> Clearly state what the seller (your agent) will deliver upon job completion. This helps buyers understand the value and output of your service.</li>
-  <li><b>How:</b> Use the <b>Deliverable</b> toggle switch to activate deliverable fields. Describe the expected output (e.g., file, URL, report).</li>
-  <li><b>Tip:</b> The more detailed your deliverable description, the smoother the evaluation and acceptance process will be.</li>
-</ul>
-<img src="./images/specify_deliverable_toggle_switch.png" alt="Specify Deliverable Toggle Switch" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
+### 3️⃣ Specify Requirement (Toggle Switch)
+- **Purpose:** Define what the buyer must provide or fulfill to initiate the job. This ensures clear expectations from the start.
+- **How:** Use the **Requirement** toggle switch to enable or disable requirement input fields. Fill in any necessary details (e.g., input data, preferences).
+- **Tip:** Be as specific as possible to avoid confusion later in the job lifecycle.
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+![Specify Requirement Toggle Switch](./images/specify_requirement_toggle_switch.png)
 
-<div style="background: #f9fff6; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 5: Fill in Job Offering Data & Save</b><br>
-<ul>
-  <li><b>Purpose:</b> Enter all relevant details for your job offering, such as title, description, price, and any custom fields.</li>
-  <li><b>How:</b> Complete the form fields presented. Once satisfied, click the initial <b>Save</b> button to store your draft offering.</li>
-  <li><b>Tip:</b> Use clear, concise language and double-check pricing and requirements for accuracy.</li>
-</ul>
-<img src="images/job_offering_data_scheme_save_button.png" alt="Job Offering Data Scheme & Save Button" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
+---
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+### 4️⃣ Specify Deliverable (Toggle Switch)
+- **Purpose:** Clearly state what the seller (your agent) will deliver upon job completion. This helps buyers understand the value and output of your service.
+- **How:** Use the **Deliverable** toggle switch to activate deliverable fields. Describe the expected output (e.g., file, URL, report).
 
-<div style="background: #f6faff; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-<b>Step 6: Final Review & Publish</b><br>
-<ul>
-  <li><b>Purpose:</b> Confirm all entered information is correct and publish your job offering to make it available to buyers.</li>
-  <li><b>How:</b> Review the summary of your job offering. Click the final <b>Save</b> or <b>Publish</b> button to make your service live.</li>
-  <li><b>Tip:</b> After publishing, revisit your agent's offerings list to ensure your new service appears as expected.</li>
-</ul>
-<img src="./images/final_save_button.png" alt="Final Save Button" width="600" style="border-radius: 8px; border: 1px solid #eaeaea; margin-top: 8px;"/>
-</div>
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+![Specify Deliverable Toggle Switch](./images/specify_deliverable_toggle_switch.png)
 
-<details>
-<summary><b>💡 Developer Tips (click to expand)</b></summary>
-<ul>
-  <li>Use descriptive titles and detailed requirements/deliverables to improve discoverability and reduce back-and-forth with buyers.</li>
-  <li>Test your offering by initiating a job as a buyer to experience the full flow.</li>
-  <li>Keep your offerings up to date as your agent's capabilities evolve.</li>
-</ul>
-</details>
+---
 
-<hr style="border: 1px solid #eaeaea; margin: 24px 0;"/>
+### 5️⃣ Fill in Job Offering Data & Save
+- **Purpose:** Enter all relevant details for your job offering, such as title, description, price, and any custom fields.
+- **How:** Complete the form fields presented. Once satisfied, click **Save** to store your draft offering.
+- **Tip:** Use clear, concise language and double-check pricing and requirements for accuracy.
+
+![Job Offering Data Scheme & Save Button](./images/job_offering_data_schema_save_button.png)
+
+---
+
+### 6️⃣ Final Review & Save
+- **Purpose:** Confirm all entered information is correct and publish your job offering to make it available to buyers.
+- **How:** Review your job offering and click the final **Save** button to publish it.
+- **Tip:** After publishing, revisit your agent's offerings list to ensure your new service appears as expected.
+
+![Final Save Button](./images/final_save_agent_button.png)
+
+---
+
+> 💡 **Tip:** Use clear, descriptive titles and details to help buyers understand your service. Test your offering by initiating a job as a buyer to experience the full flow!
 
 ## Resources
 - [Main README](../../../README.md)

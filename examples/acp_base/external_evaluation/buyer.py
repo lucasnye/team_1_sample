@@ -17,7 +17,7 @@ def test_buyer():
             for memo in job.memos:
                 if memo.next_phase == ACPJobPhase.TRANSACTION:
                     print("Paying job", job.id)
-                    job.pay(2)
+                    job.pay(job.price)
                     break
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
@@ -30,19 +30,21 @@ def test_buyer():
     )
     
     # Browse available agents based on a keyword and cluster name
-    agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>")
+    relevant_agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>")
     
-    # Agents[1] assumes you have at least 2 matching agents; use with care
+    # Pick one of the agents based on your criteria (in this example we just pick the first one)
+    chosen_agent = relevant_agents[0]
 
-    # Here, we’re just picking the second agent (agents[1]) and its first offering for demo purposes
-    job_offering = agents[1].offerings[0]
+    # Pick one of the service offerings based on your criteria (in this example we just pick the first one)
+    chosen_job_offering = chosen_agent.offerings[0]
     
-    job_id = job_offering.initiate_job(
+    job_id = chosen_job_offering.initiate_job(
         # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
         # Reference: (./images/specify_requirement_toggle_switch.png)
-        service_requirement={'<your_schema_field>': "Help me to generate a flower meme."},
-        expired_at=datetime.now() + timedelta(days=1),
-        evaluator_address=env.EVALUATOR_AGENT_WALLET_ADDRESS
+        service_requirement={"<your_schema_field>": "Help me to generate a flower meme."},
+        amount=chosen_job_offering.price,
+        evaluator_address=env.EVALUATOR_AGENT_WALLET_ADDRESS,
+        expired_at=datetime.now() + timedelta(days=1)
     )
     
     print(f"Job {job_id} initiated")

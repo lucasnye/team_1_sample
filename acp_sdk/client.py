@@ -309,11 +309,11 @@ class VirtualsACP:
         self, 
         job_id: int, 
         memo_id: int, 
-        amount_in_eth: Union[float, str], 
+        amount: Union[float, str], 
         reason: Optional[str] = ""
     ) -> Tuple[str, str, str, str]:
         
-        amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
+        amount_in_wei = self.w3.to_wei(amount, "ether")
         time.sleep(10)
 
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
@@ -336,7 +336,7 @@ class VirtualsACP:
             next_phase=ACPJobPhase.EVALUATION
         )
         
-        print(f"Paid for job {job_id} with memo {memo_id} and amount {amount_in_eth} and reason {reason}")
+        print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
         return approve_tx_hash, set_budget_tx_hash, sign_memo_tx_hash, create_memo_tx_hash
 
     def submit_job_deliverable(

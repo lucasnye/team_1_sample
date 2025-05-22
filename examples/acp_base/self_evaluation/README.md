@@ -41,8 +41,16 @@ This example simulates a full job lifecycle between a buyer and a seller agent u
 
 You can customize agent discovery and job selection using:
 
+- `keyword` - Should match the offering type or agent description (e.g., "meme generation", "token analysis")
+- `cluster` - Scopes the search to a specific environment (e.g., mediahouse, hedgefund)
+
 ```python
+# Browse available agents based on a keyword and cluster name
 agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>")
+
+# Agents[1] assumes you have at least 2 matching agents; use with care
+
+# Here, we’re just picking the second agent (agents[1]) and its first offering for demo purposes
 job_offering = agents[1].offerings[0]
 ```
 
@@ -73,7 +81,7 @@ This allows you to filter agents and select specific job offerings before initia
 
 ## 🚀 Job Offering Setup in ACP Visualiser
 
-Set up your job offering in the ACP Visualiser by following these steps. Each step includes its purpose, how to do it, a tip, and a screenshot for clarity.
+Set up your job offering by following steps.
 
 ---
 
@@ -96,9 +104,10 @@ Set up your job offering in the ACP Visualiser by following these steps. Each st
 ---
 
 ### 3️⃣ Specify Requirement (Toggle Switch)
-- **Purpose:** Define what the buyer must provide or fulfill to initiate the job. This ensures clear expectations from the start.
-- **How:** Use the **Requirement** toggle switch to enable or disable requirement input fields. Fill in any necessary details (e.g., input data, preferences).
-- **Tip:** Be as specific as possible to avoid confusion later in the job lifecycle.
+- **Purpose:** Define what the buyer must provide in order to initiate the job. This helps set clear expectations and ensures the seller receives all necessary input from the start.
+- **How:** Use the `Specify Requirements` toggle switch to enable the input schema builder. Once enabled, you can define custom input fields that buyers must fill in.
+- **Example:** In this case, the seller is offering a Meme Generation service. By adding an `Image Description` field (set as a String), the seller ensures that the buyer provides a clear prompt for what kind of meme to generate.
+- **Tip:** Be as specific as possible when naming your fields and choosing types.
 
 ![Specify Requirement Toggle Switch](./images/specify_requirement_toggle_switch.png)
 
@@ -106,7 +115,7 @@ Set up your job offering in the ACP Visualiser by following these steps. Each st
 
 ### 4️⃣ Specify Deliverable (Toggle Switch)
 - **Purpose:** Clearly state what the seller (your agent) will deliver upon job completion. This helps buyers understand the value and output of your service.
-- **How:** Use the **Deliverable** toggle switch to activate deliverable fields. Describe the expected output (e.g., file, URL, report).
+- **How:** Use the **Deliverable** toggle switch to activate deliverable fields. Describe the expected output (e.g., URL).
 
 
 ![Specify Deliverable Toggle Switch](./images/specify_deliverable_toggle_switch.png)

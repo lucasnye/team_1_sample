@@ -1,5 +1,4 @@
 # virtuals_acp/client.py
-
 import json
 import signal
 import sys
@@ -14,14 +13,13 @@ from eth_account.signers.local import LocalAccount
 import socketio
 import socketio.client
 
-from acp_sdk.job import AcpJob
-from acp_sdk.memo import AcpMemo
-
 from acp_sdk.exceptions import ACPApiError, ACPError
 from acp_sdk.models import  ACPJobPhase, MemoType, IACPAgent
 from acp_sdk.contract_manager import _ACPContractManager
 from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
-from acp_sdk.offering import AcpJobOffering
+from acp_sdk.offering import ACPJobOffering
+from acp_sdk.job import ACPJob
+from acp_sdk.memo import ACPMemo
 
 class VirtualsACP:
     def __init__(self, 
@@ -59,7 +57,7 @@ class VirtualsACP:
         self._setup_socket_handlers()
         self._connect_socket()
 
-    def _default_on_evaluate(self, job: AcpJob) -> Tuple[bool, str]:
+    def _default_on_evaluate(self, job: ACPJob) -> Tuple[bool, str]:
         """Default handler for job evaluation events."""
         return True,"Succesful"
     
@@ -70,14 +68,14 @@ class VirtualsACP:
         if self.on_evaluate:
             print(f"Evaluating job {data}")
             try:
-                memos = [AcpMemo(
+                memos = [ACPMemo(
                     id=memo["id"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
                 
-                job = AcpJob(
+                job = ACPJob(
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
@@ -92,7 +90,7 @@ class VirtualsACP:
         if self.on_new_task:
             print("Received new task:", data["memos"])
             try:
-                memos = [AcpMemo(
+                memos = [ACPMemo(
                     id=memo["id"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
@@ -100,7 +98,7 @@ class VirtualsACP:
                 ) for memo in data["memos"]]
                 
                 
-                job = AcpJob(
+                job = ACPJob(
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
@@ -171,7 +169,7 @@ class VirtualsACP:
             for agent_data in agents_data:
                 
                 offerings = [
-                    AcpJobOffering(
+                    ACPJobOffering(
                         acp_client=self,
                         provider_address=agent_data["walletAddress"],
                         type=off["name"],
@@ -199,9 +197,9 @@ class VirtualsACP:
         self,
         provider_address: str,
         service_requirement: str | Dict[str, Any],
+        price: Optional[float] = None,
         expired_at: Optional[datetime] = None,
         evaluator_address: Optional[str] = None,
-        price: Optional[float] = None,
     ) -> int:
         if expired_at is None:
             expired_at = datetime.now(timezone.utc) + timedelta(days=1)
@@ -270,7 +268,6 @@ class VirtualsACP:
         if price:
             payload["price"] = price
         
-        
         requests.post(
             self.acp_api_url,
             json=payload,
@@ -281,10 +278,16 @@ class VirtualsACP:
         )
         return job_id
 
-    def respond_to_job_memo(self,job_id: int, memo_id: int, accept: bool, reason: Optional[str] = "") -> str:
+    def respond_to_job_memo(
+        self,
+        job_id: int, 
+        memo_id: int, 
+        accept: bool, 
+        reason: Optional[str] = ""
+    ) -> str:
+        
         try:
             tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
-            
             time.sleep(10)
             
             print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
@@ -301,10 +304,18 @@ class VirtualsACP:
         except Exception as e:
             print(f"Error in respond_to_job_memo: {e}")
             raise
-    def pay_for_job(self, job_id: int, memo_id: int, amount_in_eth: Union[float, str], reason: Optional[str] = "") -> Tuple[str, str]:
-        amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
+
+    def pay_for_job(
+        self, 
+        job_id: int, 
+        memo_id: int, 
+        amount_in_eth: Union[float, str], 
+        reason: Optional[str] = ""
+    ) -> Tuple[str, str, str, str]:
         
+        amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
         time.sleep(10)
+
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
         time.sleep(10)
 
@@ -328,7 +339,12 @@ class VirtualsACP:
         print(f"Paid for job {job_id} with memo {memo_id} and amount {amount_in_eth} and reason {reason}")
         return approve_tx_hash, set_budget_tx_hash, sign_memo_tx_hash, create_memo_tx_hash
 
-    def submit_job_deliverable(self, job_id: int, deliverable_content: str) -> str:
+    def submit_job_deliverable(
+        self, 
+        job_id: int, 
+        deliverable_content: str
+    ) -> str:
+        
         tx_hash = self.contract_manager.create_memo(
             self.agent_address,
             job_id,
@@ -340,13 +356,19 @@ class VirtualsACP:
         # print(f"Deliverable submission tx: {tx_hash} for job {job_id}")
         return tx_hash
 
-    def evaluate_job_delivery(self, memo_id_of_deliverable: int, accept: bool, reason: Optional[str] = "") -> str:
+    def evaluate_job_delivery(
+        self, 
+        memo_id_of_deliverable: int, 
+        accept: bool, 
+        reason: Optional[str] = ""
+    ) -> str:
+        
         tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id_of_deliverable, accept, reason or "")
         print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
         return tx_hash
 
 
-    def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
+    def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
         url = f"{self.acp_api_url}/jobs/active?pagination[page]={page}&pagination[pageSize]={pageSize}"
         headers = {
             "wallet-address": self.agent_address
@@ -362,13 +384,13 @@ class VirtualsACP:
             for job in data.get("data", []):
                 memos = []
                 for memo in job.get("memos", []):
-                    memos.append(AcpMemo(
+                    memos.append(ACPMemo(
                         id=memo.get("id"),
                         type=int(memo.get("memoType")),
                         content=memo.get("content"),
                         next_phase=int(memo.get("nextPhase"))
                     ))
-                jobs.append(AcpJob(
+                jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
@@ -380,7 +402,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get active jobs: {e}")
         
         
-    def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
+    def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
         url = f"{self.acp_api_url}/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
@@ -395,13 +417,13 @@ class VirtualsACP:
             for job in data.get("data", []):
                 memos = []
                 for memo in job.get("memos", []):
-                    memos.append(AcpMemo(
+                    memos.append(ACPMemo(
                         id=memo.get("id"),
                         type=int(memo.get("memoType")),
                         content=memo.get("content"),
                         next_phase=int(memo.get("nextPhase"))
                     ))
-                jobs.append(AcpJob(
+                jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
@@ -412,7 +434,7 @@ class VirtualsACP:
         except Exception as e:
             raise ACPApiError(f"Failed to get completed jobs: {e}")
         
-    def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List["AcpJob"]:
+    def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
         url = f"{self.acp_api_url}/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
         headers = {
             "wallet-address": self.agent_address
@@ -427,13 +449,13 @@ class VirtualsACP:
             for job in data.get("data", []):
                 memos = []
                 for memo in job.get("memos", []):
-                    memos.append(AcpMemo(
+                    memos.append(ACPMemo(
                         id=memo.get("id"),
                         type=int(memo.get("memoType")),
                         content=memo.get("content"),
                         next_phase=int(memo.get("nextPhase"))
                     ))
-                jobs.append(AcpJob(
+                jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
@@ -444,7 +466,7 @@ class VirtualsACP:
         except Exception as e:
             raise ACPApiError(f"Failed to get cancelled jobs: {e}")
         
-    def get_job_by_onchain_id(self, onchain_job_id: int) -> "AcpJob":
+    def get_job_by_onchain_id(self, onchain_job_id: int) -> "ACPJob":
         url = f"{self.acp_api_url}/jobs/{onchain_job_id}"
         headers = {
             "wallet-address": self.agent_address
@@ -460,13 +482,13 @@ class VirtualsACP:
             
             memos = []
             for memo in data.get("data", {}).get("memos", []):
-                memos.append(AcpMemo(
+                memos.append(ACPMemo(
                     id=memo.get("id"),
                     type=int(memo.get("memoType")),
                     content=memo.get("content"),
                     next_phase=int(memo.get("nextPhase"))
                 ))
-            return AcpJob(
+            return ACPJob(
                 acp_client=self,
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
@@ -476,7 +498,7 @@ class VirtualsACP:
         except Exception as e:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")
         
-    def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> 'AcpMemo':
+    def get_memo_by_id(self, onchain_job_id: int, memo_id: int) -> 'ACPMemo':
         url = f"{self.acp_api_url}/jobs/{onchain_job_id}/memos/{memo_id}"
         headers = {
             "wallet-address": self.agent_address
@@ -490,7 +512,7 @@ class VirtualsACP:
             if data.get("error"):
                 raise ACPApiError(data["error"]["message"])
             
-            return AcpMemo(
+            return ACPMemo(
                 id=data.get("data", {}).get("id"),
                 type=int(data.get("data", {}).get("memoType")),
                 content=data.get("data", {}).get("content"),
@@ -501,6 +523,6 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get memo by ID: {e}")
 
 # Rebuild the AcpJob model after VirtualsACP is defined
-AcpJob.model_rebuild()
-AcpMemo.model_rebuild()
-AcpJobOffering.model_rebuild()
+ACPJob.model_rebuild()
+ACPMemo.model_rebuild()
+ACPJobOffering.model_rebuild()

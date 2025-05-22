@@ -1,6 +1,3 @@
-import sys
-import os
-
 from acp_sdk.client import VirtualsACP
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.env import EnvSettings

@@ -17,10 +17,10 @@ from .exceptions import (
     ACPContractError,
     TransactionFailedError
 )
-from .job import AcpJob
 from .client import VirtualsACP
-from .offering import AcpJobOffering
-from .memo import AcpMemo
+from .job import ACPJob
+from .offering import ACPJobOffering
+from .memo import ACPMemo
 from .abi import ACP_ABI, ERC20_ABI
 
 __all__ = [
@@ -39,9 +39,9 @@ __all__ = [
     "TransactionFailedError",
     "ACP_ABI",
     "ERC20_ABI",
-    "AcpJob",
-    "AcpMemo",
-    "AcpJobOffering"
+    "ACPJob",
+    "ACPMemo",
+    "ACPJobOffering"
 ]
 
 __version__ = "0.1.0"

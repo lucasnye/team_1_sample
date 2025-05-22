@@ -1,11 +1,18 @@
 from datetime import datetime, timedelta
+import sys
+import os
 import time
 
-from acp_sdk import VirtualsACP, ACPJob, ACPJobPhase
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from acp_sdk.client import VirtualsACP
+from acp_sdk.job import ACPJob
+from acp_sdk.models import ACPJobPhase
 from acp_sdk.configs import BASE_SEPOLIA_CONFIG
 from acp_sdk.env import EnvSettings
 
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 
@@ -34,21 +41,26 @@ def test_buyer():
             
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
-        agent_wallet_address=env.BUYER_WALLET_ADDRESS,
+        agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task,
         on_evaluate=on_evaluate
     )
     
-    agents = acp.browse_agents(keyword="meme", cluster="999")
+    # Browse available agents based on a keyword and cluster name
+    agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>")
     
+    # Agents[1] assumes you have at least 2 matching agents; use with care
+
+    # Here, we’re just picking the second agent (agents[1]) and its first offering for demo purposes
     job_offering = agents[1].offerings[0]
     
     job_id = job_offering.initiate_job(
-        price=float(2),
-        service_requirement="Help me generate a meme",
+        # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
+        # Reference: (./images/specify_requirement_toggle_switch.png)
+        service_requirement={'<your_schema_field>': "Help me to generate a flower meme."},
         expired_at=datetime.now() + timedelta(days=1),
-        # evaluator_address=env.BUYER_WALLET_ADDRESS
+        # evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS
     )
     
     print(f"Job {job_id} initiated")

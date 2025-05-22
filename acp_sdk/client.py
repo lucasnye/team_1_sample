@@ -196,9 +196,9 @@ class VirtualsACP:
         self,
         provider_address: str,
         service_requirement: str | Dict[str, Any],
+        price: Optional[float] = None,
         expired_at: Optional[datetime] = None,
         evaluator_address: Optional[str] = None,
-        price: Optional[float] = None,
     ) -> int:
         if expired_at is None:
             expired_at = datetime.now(timezone.utc) + timedelta(days=1)
@@ -267,7 +267,6 @@ class VirtualsACP:
         if price:
             payload["price"] = price
         
-        
         requests.post(
             self.acp_api_url,
             json=payload,
@@ -278,10 +277,16 @@ class VirtualsACP:
         )
         return job_id
 
-    def respond_to_job_memo(self,job_id: int, memo_id: int, accept: bool, reason: Optional[str] = "") -> str:
+    def respond_to_job_memo(
+        self,
+        job_id: int, 
+        memo_id: int, 
+        accept: bool, 
+        reason: Optional[str] = ""
+    ) -> str:
+        
         try:
             tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
-            
             time.sleep(10)
             
             print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
@@ -298,10 +303,18 @@ class VirtualsACP:
         except Exception as e:
             print(f"Error in respond_to_job_memo: {e}")
             raise
-    def pay_for_job(self, job_id: int, memo_id: int, amount_in_eth: Union[float, str], reason: Optional[str] = "") -> Tuple[str, str]:
-        amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
+
+    def pay_for_job(
+        self, 
+        job_id: int, 
+        memo_id: int, 
+        amount_in_eth: Union[float, str], 
+        reason: Optional[str] = ""
+    ) -> Tuple[str, str, str, str]:
         
+        amount_in_wei = self.w3.to_wei(amount_in_eth, "ether")
         time.sleep(10)
+
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
         time.sleep(10)
 
@@ -325,7 +338,12 @@ class VirtualsACP:
         print(f"Paid for job {job_id} with memo {memo_id} and amount {amount_in_eth} and reason {reason}")
         return approve_tx_hash, set_budget_tx_hash, sign_memo_tx_hash, create_memo_tx_hash
 
-    def submit_job_deliverable(self, job_id: int, deliverable_content: str) -> str:
+    def submit_job_deliverable(
+        self, 
+        job_id: int, 
+        deliverable_content: str
+    ) -> str:
+        
         tx_hash = self.contract_manager.create_memo(
             self.agent_address,
             job_id,
@@ -337,7 +355,13 @@ class VirtualsACP:
         # print(f"Deliverable submission tx: {tx_hash} for job {job_id}")
         return tx_hash
 
-    def evaluate_job_delivery(self, memo_id_of_deliverable: int, accept: bool, reason: Optional[str] = "") -> str:
+    def evaluate_job_delivery(
+        self, 
+        memo_id_of_deliverable: int, 
+        accept: bool, 
+        reason: Optional[str] = ""
+    ) -> str:
+        
         tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id_of_deliverable, accept, reason or "")
         print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
         return tx_hash

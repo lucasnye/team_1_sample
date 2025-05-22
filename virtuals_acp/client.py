@@ -13,13 +13,13 @@ from eth_account.signers.local import LocalAccount
 import socketio
 import socketio.client
 
-from acp_sdk.exceptions import ACPApiError, ACPError
-from acp_sdk.models import  ACPJobPhase, MemoType, IACPAgent
-from acp_sdk.contract_manager import _ACPContractManager
-from acp_sdk.configs import ACPContractConfig, DEFAULT_CONFIG
-from acp_sdk.offering import ACPJobOffering
-from acp_sdk.job import ACPJob
-from acp_sdk.memo import ACPMemo
+from virtuals_acp.exceptions import ACPApiError, ACPError
+from virtuals_acp.models import  ACPJobPhase, MemoType, IACPAgent
+from virtuals_acp.contract_manager import _ACPContractManager
+from virtuals_acp.configs import ACPContractConfig, DEFAULT_CONFIG
+from virtuals_acp.offering import ACPJobOffering
+from virtuals_acp.job import ACPJob
+from virtuals_acp.memo import ACPMemo
 
 class VirtualsACP:
     def __init__(self, 

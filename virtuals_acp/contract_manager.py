@@ -11,9 +11,9 @@ from eth_account.messages import encode_defunct
 from web3 import Web3
 from web3.contract import Contract
 
-from acp_sdk.abi import ACP_ABI, ERC20_ABI
-from acp_sdk.configs import ACPContractConfig
-from acp_sdk.models import ACPJobPhase, MemoType
+from virtuals_acp.abi import ACP_ABI, ERC20_ABI
+from virtuals_acp.configs import ACPContractConfig
+from virtuals_acp.models import ACPJobPhase, MemoType
 
 
 

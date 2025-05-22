@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "acp-sdk"
+name = "virtuals-acp"
 version = "0.1.0"
-description = "ACP Plugin for Python SDK for GAME by Virtuals"
+description = "Agent Commerce Protocol Python SDK by Virtuals"
 authors = ["Steven Lee Soon Fatt <steven@virtuals.io>"]
 readme = "README.md"
 

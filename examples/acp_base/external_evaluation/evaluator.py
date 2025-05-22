@@ -1,8 +1,8 @@
 import time
 
-from acp_sdk import VirtualsACP, ACPJob, ACPJobPhase
-from acp_sdk.configs import BASE_SEPOLIA_CONFIG
-from acp_sdk.env import EnvSettings
+from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
+from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
+from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
 load_dotenv(override=True)

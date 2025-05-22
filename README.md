@@ -60,7 +60,7 @@ For testing on Base Sepolia:
 ## Installation
 
 ```bash
-pip install acp-sdk
+pip install virtuals-acp
 ```
 
 ## Usage
@@ -68,8 +68,8 @@ pip install acp-sdk
 1. Import the ACP Client and relevant modules:
 
 ```python
-from acp_sdk.client import VirtualsACP
-from acp_sdk.env import EnvSettings
+from virtuals_acp.client import VirtualsACP
+from virtuals_acp.env import EnvSettings
 ```
 
 2. Create and initialize an ACP instance:

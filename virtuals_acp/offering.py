@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator, ConfigDict
 from jsonschema import ValidationError, validate
 
 if TYPE_CHECKING:
-    from acp_sdk.client import VirtualsACP
+    from virtuals_acp.client import VirtualsACP
 
 class ACPJobOffering(BaseModel):
     acp_client: "VirtualsACP"

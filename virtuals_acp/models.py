@@ -5,7 +5,7 @@ from typing import List, Optional, TYPE_CHECKING
 from enum import Enum
 
 if TYPE_CHECKING:
-    from acp_sdk.offering import ACPJobOffering
+    from virtuals_acp.offering import ACPJobOffering
 
 class MemoType(Enum):
     MESSAGE = 0

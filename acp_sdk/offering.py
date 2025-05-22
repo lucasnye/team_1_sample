@@ -24,6 +24,19 @@ class ACPJobOffering(BaseModel):
             except json.JSONDecodeError:
                 return None
         return v
+    
+    def __str__(self) -> str:
+        return (
+            f"ACPJobOffering(\n"
+            f"  provider_address='{self.provider_address}',\n"
+            f"  type='{self.type}',\n"
+            f"  price={self.price},\n"
+            f"  requirementSchema={json.dumps(self.requirementSchema, indent=2) if self.requirementSchema else None}\n"
+            f")"
+        )
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def initiate_job(
         self,
@@ -52,6 +65,6 @@ class ACPJobOffering(BaseModel):
             provider_address=self.provider_address,
             service_requirement=service_requirement,
             evaluator_address=evaluator_address,
-            price=amount,
+            amount=amount,
             expired_at=expired_at,
         )

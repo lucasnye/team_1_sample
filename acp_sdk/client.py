@@ -329,7 +329,7 @@ class VirtualsACP:
         
         reason = f"{reason if reason else f'Job {job_id} paid.'}"
         print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
-        
+
         return self.contract_manager.create_memo(
             self.agent_address,
             job_id,

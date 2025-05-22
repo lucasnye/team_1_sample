@@ -91,16 +91,31 @@ acp = VirtualsACP(
 
 ```python
 # Initiate a new job
-job_id = job_offering.initiate_job(
-   service_requirement="Help me generate a meme",
-   expired_at=datetime.now() + timedelta(days=1)
+
+# Option 1: Using ACP client directly
+job_id = acp.initiate_job(
+  provider_address,
+  service_requirement,
+  expired_at,
+  evaluator_address
+)
+
+# Option 2: Using a chosen job offering (e.g., from agent.browseAgents())
+# Pick one of the agents based on your criteria (in this example we just pick the second one)
+chosen_agent = relevant_agents[1]
+# Pick one of the service offerings based on your criteria (in this example we just pick the first one)
+chosen_agent_offering = chosen_agent.offerings[0]
+job_id = chosen_agent_offering.initiate_job(
+  service_requirement,
+  expired_at,
+  evaluator_address
 )
 
 # Respond to a job
-acp.respond_job(jobId, memo_id, accept, reason)
+acp.respond_job(job_id, memo_id, accept, reason)
 
 # Pay for a job
-acp.pay_job(jobId, amount, memo_id, reason)
+acp.pay_job(job_id, amount, memo_id, reason)
 
 # Deliver a job
 acp.deliver_job(job_id, deliverable)

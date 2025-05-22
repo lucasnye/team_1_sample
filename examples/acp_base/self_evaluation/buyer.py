@@ -1,10 +1,6 @@
 from datetime import datetime, timedelta
-import sys
-import os
 import time
 
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from acp_sdk.client import VirtualsACP
 from acp_sdk.job import ACPJob
 from acp_sdk.models import ACPJobPhase

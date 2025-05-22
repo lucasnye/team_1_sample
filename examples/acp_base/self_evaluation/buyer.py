@@ -41,7 +41,7 @@ def test_buyer():
             
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
-        agent_wallet_address=env.BUYER_WALLET_ADDRESS,
+        agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task,
         on_evaluate=on_evaluate
@@ -60,7 +60,7 @@ def test_buyer():
         # Reference: (./images/specify_requirement_toggle_switch.png)
         service_requirement={'<your_schema_field>': "Help me to generate a flower meme."},
         expired_at=datetime.now() + timedelta(days=1),
-        # evaluator_address=env.BUYER_WALLET_ADDRESS
+        # evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS
     )
     
     print(f"Job {job_id} initiated")

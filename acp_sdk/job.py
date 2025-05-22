@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class ACPJob(BaseModel):
     id: int
     provider_address: str
+    price: float
     acp_client: "VirtualsACP"
     memos: List[ACPMemo] = Field(default_factory=list)
     phase: ACPJobPhase

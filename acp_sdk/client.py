@@ -80,7 +80,8 @@ class VirtualsACP:
                     id=data["id"],
                     provider_address=data["providerAddress"],
                     memos=memos,
-                    phase=data["phase"]
+                    phase=data["phase"],
+                    price=data["price"]
                 )
                 self.on_evaluate(job)
             except Exception as e:
@@ -103,7 +104,8 @@ class VirtualsACP:
                     id=data["id"],
                     provider_address=data["providerAddress"],
                     memos=memos,
-                    phase=data["phase"]
+                    phase=data["phase"],
+                    price=data["price"]
                 )
                 
                 self.on_new_task(job)
@@ -196,10 +198,10 @@ class VirtualsACP:
     def initiate_job(
         self,
         provider_address: str,
-        service_requirement: str | Dict[str, Any],
-        price: Optional[float] = None,
-        expired_at: Optional[datetime] = None,
+        service_requirement: Union[Dict[str, Any], str],
+        amount: float,
         evaluator_address: Optional[str] = None,
+        expired_at: Optional[datetime] = None
     ) -> int:
         if expired_at is None:
             expired_at = datetime.now(timezone.utc) + timedelta(days=1)
@@ -213,7 +215,6 @@ class VirtualsACP:
         tx_hash = self.contract_manager.create_job(
             self.agent_address, provider_address, eval_addr, expired_at
         )
-        # print(f"Job creation tx: {tx_hash}, Job ID: {job_id}, initiated by signer {self.signer_address} for agent {self.agent_address}")
 
         time.sleep(retry_delay) 
         for attempt in range(retry_count):
@@ -223,16 +224,16 @@ class VirtualsACP:
                 if not data:
                     raise Exception("Invalid tx_hash!")
                 
-                if (data.get("status") == "retry"):
+                if data.get("status") == "retry":
                     raise Exception("Transaction failed, retrying...")
                 
-                if (data.get("status") == "failed"):
+                if data.get("status") == "failed":
                     break
                 
-                if (data.get("status") == "success"):
+                if data.get("status") == "success":
                     job_id = int(data.get("result").get("jobId"))
                     
-                if (job_id is not None and job_id != ""):
+                if job_id is not None and job_id != "":
                     break  
                 
             except Exception as e:
@@ -243,8 +244,12 @@ class VirtualsACP:
                 else:
                     raise
         
-        if (job_id is None or job_id == ""):
+        if job_id is None or job_id == "":
             raise Exception("Failed to create job")
+        
+        amount_in_wei = self.w3.to_wei(amount, "ether")
+        set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
+        time.sleep(10)
         
         self.contract_manager.create_memo(
             self.agent_address,
@@ -265,8 +270,8 @@ class VirtualsACP:
             "evaluatorAddress": evaluator_address
         }
         
-        if price:
-            payload["price"] = price
+        if amount:
+            payload["price"] = amount
         
         requests.post(
             self.acp_api_url,
@@ -319,15 +324,13 @@ class VirtualsACP:
         approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
         time.sleep(10)
 
-        set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
-        time.sleep(10)
-
         sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
         time.sleep(10)
         
         reason = f"{reason if reason else f'Job {job_id} paid.'}"
+        print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
 
-        create_memo_tx_hash = self.contract_manager.create_memo(
+        return self.contract_manager.create_memo(
             self.agent_address,
             job_id,
             reason,
@@ -335,9 +338,6 @@ class VirtualsACP:
             is_secured=False,
             next_phase=ACPJobPhase.EVALUATION
         )
-        
-        print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
-        return approve_tx_hash, set_budget_tx_hash, sign_memo_tx_hash, create_memo_tx_hash
 
     def submit_job_deliverable(
         self, 
@@ -388,14 +388,15 @@ class VirtualsACP:
                         id=memo.get("id"),
                         type=int(memo.get("memoType")),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=int(memo.get("nextPhase")),
                     ))
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs 
         except Exception as e:
@@ -428,7 +429,8 @@ class VirtualsACP:
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs
         except Exception as e:
@@ -460,7 +462,8 @@ class VirtualsACP:
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
                     memos=memos,
-                    phase=job.get("phase")
+                    phase=job.get("phase"),
+                    price=job.get("price")
                 ))
             return jobs
         except Exception as e:
@@ -493,7 +496,8 @@ class VirtualsACP:
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
                 memos=memos,
-                phase=data.get("data", {}).get("phase")
+                phase=data.get("data", {}).get("phase"),
+                price=data.get("data", {}).get("price")
             )
         except Exception as e:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")

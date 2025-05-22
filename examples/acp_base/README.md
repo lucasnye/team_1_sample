@@ -1,13 +1,11 @@
-<!-- Banner (replace with your own if available) -->
+<!-- Main Title Section -->
+<h1 align="center">🧩<br>ACP Python SDK — <span style="color:#3b82f6;">Examples Suite</span></h1>
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/virtualsprotocol/acp-python/main/docs/imgs/acp-banner.jpeg" alt="ACP Python SDK Banner" width="80%">
+  <strong>Explore practical, ready-to-run examples for building, testing, and extending agents using the ACP Python SDK.</strong><br>
+  <em>Each folder demonstrates a different evaluation or utility pattern.</em>
 </p>
 
-# 🧩 ACP Python SDK — Examples Suite
-
-> **Explore practical, ready-to-run examples for building, testing, and extending agents using the ACP Python SDK.**
->
-> Each folder demonstrates a different evaluation or utility pattern. Use these as templates or inspiration for your own agent projects!
 
 ---
 

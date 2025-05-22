@@ -144,7 +144,8 @@ class VirtualsACP:
 
     def __del__(self):
         """Cleanup when the object is destroyed."""
-        self.sio.disconnect()
+        if hasattr(self, 'sio') and self.sio is not None:
+            self.sio.disconnect()
         
     @property
     def agent_address(self) -> str:

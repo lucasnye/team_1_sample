@@ -44,7 +44,6 @@ def test_buyer():
         # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
         # Reference: (./images/specify_requirement_toggle_switch.png)
         service_requirement={"<your_schema_field>": "Help me to generate a flower meme."},
-        amount=chosen_job_offering.price,
         evaluator_address=env.EVALUATOR_AGENT_WALLET_ADDRESS,
         expired_at=datetime.now() + timedelta(days=1)
     )

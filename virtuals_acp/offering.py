@@ -41,7 +41,6 @@ class ACPJobOffering(BaseModel):
     def initiate_job(
         self,
         service_requirement: Union[Dict[str, Any], str],
-        amount: float,
         evaluator_address: Optional[str] = None,
         expired_at: Optional[datetime] = None
     ) -> int:
@@ -65,6 +64,6 @@ class ACPJobOffering(BaseModel):
             provider_address=self.provider_address,
             service_requirement=service_requirement,
             evaluator_address=evaluator_address,
-            amount=amount,
+            amount=self.price,
             expired_at=expired_at,
         )

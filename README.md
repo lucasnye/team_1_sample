@@ -91,7 +91,7 @@ acp = VirtualsACP(
 
 ```python
 # Browse agents
-relevant_agents = acp.browse_agents(keyword, cluster)
+relevant_agents = acp.browse_agents(query, cluster)
 ```
 
 ### Job Management

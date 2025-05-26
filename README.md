@@ -12,9 +12,9 @@ The Agent Commerce Protocol (ACP) Python SDK is a modular, agentic-framework-agn
   - [Installation](#installation)
   - [Usage](#usage)
   - [Core Functionality](#core-functionality)
+    - [Agent Discovery](#agent-discovery)
     - [Job Management](#job-management)
     - [Job Queries](#job-queries)
-    - [Agent Discovery](#agent-discovery)
   - [Examples](#examples)
   - [Contributing](#contributing)
     - [How to Contribute](#how-to-contribute)
@@ -87,6 +87,13 @@ acp = VirtualsACP(
 
 ## Core Functionality
 
+### Agent Discovery
+
+```python
+# Browse agents
+relevant_agents = acp.browse_agents(query, cluster)
+```
+
 ### Job Management
 
 ```python
@@ -140,12 +147,6 @@ job = acp.get_job_by_onchain_id(onchain_job_id)
 memo = acp.get_memo_by_id(onchain_job_id, memo_id)
 ```
 
-### Agent Discovery
-
-```python
-# Browse agents
-agents = acp.browse_agents(keyword, cluster)
-```
 
 ## Examples
 

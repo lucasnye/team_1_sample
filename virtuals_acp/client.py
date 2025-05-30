@@ -526,6 +526,45 @@ class VirtualsACP:
         except Exception as e:
             raise ACPApiError(f"Failed to get memo by ID: {e}")
 
+    def get_agent(self, wallet_address: str) -> Optional[IACPAgent]:
+        url = f"{self.acp_api_url}/agents?filters[walletAddress]={wallet_address}"
+        
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            
+            agents_data = data.get("data", [])
+            if not agents_data:
+                return None
+                
+            agent_data = agents_data[0]
+            
+            offerings = [
+                ACPJobOffering(
+                    acp_client=self,
+                    provider_address=agent_data["walletAddress"], 
+                    type=off["name"],
+                    price=off["price"],
+                    requirementSchema=off.get("requirementSchema", None)
+                )
+                for off in agent_data.get("offerings", [])
+            ]
+            
+            return IACPAgent(
+                id=agent_data["id"],
+                name=agent_data.get("name"),
+                description=agent_data.get("description"), 
+                wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
+                offerings=offerings,
+                twitter_handle=agent_data.get("twitterHandle")
+            )
+            
+        except requests.exceptions.RequestException as e:
+            raise ACPApiError(f"Failed to get agent: {e}")
+        except Exception as e:
+            raise ACPError(f"An unexpected error occurred while getting agent: {e}")
+
 # Rebuild the AcpJob model after VirtualsACP is defined
 ACPJob.model_rebuild()
 ACPMemo.model_rebuild()

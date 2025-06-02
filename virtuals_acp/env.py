@@ -14,7 +14,7 @@ class EnvSettings(BaseSettings):
     @classmethod
     def strip_0x_prefix(cls, v: str) -> str:
         if v and v.startswith("0x"):
-            raise ValueError("WALLET_PRIVATE_KEY must not start with '0x'. Please remove it.")
+            raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY must not start with '0x'. Please remove it.")
         return v
 
     @field_validator("BUYER_AGENT_WALLET_ADDRESS", "SELLER_AGENT_WALLET_ADDRESS", "EVALUATOR_AGENT_WALLET_ADDRESS")

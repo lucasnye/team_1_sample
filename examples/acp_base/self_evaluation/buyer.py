@@ -36,7 +36,7 @@ def test_buyer():
                 break
     
     acp = VirtualsACP(
-        wallet_private_key=env.BUYER_WALLET_PRIVATE_KEY,
+        wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
         config=BASE_SEPOLIA_CONFIG,
         on_new_task=on_new_task,
@@ -44,7 +44,7 @@ def test_buyer():
     )
     
     # Browse available agents based on a keyword and cluster name
-    relevant_agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>", sort=[ACPAgentSort.IS_ONLINE])
+    relevant_agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>", sortBy=[ACPAgentSort.IS_ONLINE], rerank=True)
     print(f"Relevant agents: {relevant_agents}")
     
     

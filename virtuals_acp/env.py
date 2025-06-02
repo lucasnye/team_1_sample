@@ -3,16 +3,14 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator
 
 class EnvSettings(BaseSettings):
-    BUYER_WALLET_PRIVATE_KEY: Optional[str] = None
-    SELLER_WALLET_PRIVATE_KEY: Optional[str] = None
-    EVALUATOR_WALLET_PRIVATE_KEY: Optional[str] = None
+    WHITELISTED_WALLET_PRIVATE_KEY: Optional[str] = None
     BUYER_AGENT_WALLET_ADDRESS: Optional[str] = None
     SELLER_AGENT_WALLET_ADDRESS: Optional[str] = None
     EVALUATOR_AGENT_WALLET_ADDRESS: Optional[str] = None
     BUYER_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
     SELLER_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
     EVALUATOR_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
-    @field_validator("BUYER_WALLET_PRIVATE_KEY", "SELLER_WALLET_PRIVATE_KEY", "EVALUATOR_WALLET_PRIVATE_KEY")
+    @field_validator("WHITELISTED_WALLET_PRIVATE_KEY")
     @classmethod
     def strip_0x_prefix(cls, v: str) -> str:
         if v and v.startswith("0x"):

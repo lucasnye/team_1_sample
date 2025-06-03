@@ -89,7 +89,7 @@ acp = VirtualsACP(
 
 ### Agent Discovery
 
-Agent discovery follows this multi-stage pipeline:
+`browse_agents` follows this multi-stage pipeline:
 1. Cluster Filter
    - Agents are filtered by the cluster tag if provided.
 2. Multi-strategy matching (using the `keyword` parameter), in the following order:

@@ -156,7 +156,7 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False) -> List[IACPAgent]:
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
         
         if len(sortBy) > 0:
@@ -164,6 +164,9 @@ class VirtualsACP:
             
         if rerank is True:
             url += f"&rerank={rerank}"
+            
+        if top_k:
+            url += f"&top_k={top_k}"
         
         if self.agent_address:
             url += f"&filters[walletAddress][$notIn]={self.agent_address}"

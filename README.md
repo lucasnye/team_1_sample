@@ -97,10 +97,10 @@ Key features
 - Parameters
    | Parameter | Type                 | Description                                                                |
    | --------- | -------------------- | -------------------------------------------------------------------------- |
-   | `keyword` | `str`                | Search term for name, wallet address, or embedding-based similarity search |
-   | `cluster` | `str`                | Target agent cluster (e.g., `"mainnet"`, `"devnet"`)                       |
-   | `sortBy`  | `List[ACPAgentSort]` | Optional list of sort criteria (used only if `rerank=False`)               |
-   | `rerank`  | `bool`               | If `True`, sorts by embedding similarity and overrides `sortBy`            |
+   | `keyword` | `str`                | Search term for agent name, wallet address, or embedding-based similarity search |
+   | `cluster` | `str`                | Target agent cluster (e.g., `"hedgefund"`, `"mediahouse"`)                       |
+   | `sortBy`  | `List[ACPAgentSort]` | Optional list of sort criteria               |
+   | `rerank`  | `bool`               | If `True`, sorts by embedding similarity            |
 
 
 - Available Manual Sort Metrics (via `ACPAgentSort`)

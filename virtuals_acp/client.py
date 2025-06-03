@@ -446,6 +446,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -479,6 +481,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")

@@ -7,7 +7,9 @@ class EnvSettings(BaseSettings):
     BUYER_AGENT_WALLET_ADDRESS: Optional[str] = None
     SELLER_AGENT_WALLET_ADDRESS: Optional[str] = None
     EVALUATOR_AGENT_WALLET_ADDRESS: Optional[str] = None
-
+    BUYER_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
+    SELLER_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
+    EVALUATOR_GAME_TWITTER_ACCESS_TOKEN: Optional[str] = None
     @field_validator("WHITELISTED_WALLET_PRIVATE_KEY")
     @classmethod
     def strip_0x_prefix(cls, v: str) -> str:

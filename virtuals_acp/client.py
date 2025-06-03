@@ -14,7 +14,7 @@ import socketio
 import socketio.client
 
 from virtuals_acp.exceptions import ACPApiError, ACPError
-from virtuals_acp.models import  ACPJobPhase, MemoType, IACPAgent
+from virtuals_acp.models import  ACPAgentSort, ACPJobPhase, MemoType, IACPAgent
 from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.configs import ACPContractConfig, DEFAULT_CONFIG
 from virtuals_acp.offering import ACPJobOffering
@@ -79,6 +79,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]
@@ -103,6 +105,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]
@@ -156,8 +160,21 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None) -> List[IACPAgent]:
-        url = f"{self.acp_api_url}/agents?search={keyword}&filters[walletAddress][$notIn]={self.agent_address}"
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
+        url = f"{self.acp_api_url}/agents?search={keyword}"
+        
+        if len(sortBy) > 0:
+            url += f"&sort={','.join([s.value for s in sortBy])}"
+            
+        if rerank is True:
+            url += f"&rerank={rerank}"
+            
+        if top_k:
+            url += f"&top_k={top_k}"
+        
+        if self.agent_address:
+            url += f"&filters[walletAddress][$notIn]={self.agent_address}"
+            
         if cluster:
             url += f"&filters[cluster]={cluster}"
             
@@ -187,7 +204,8 @@ class VirtualsACP:
                     description=agent_data.get("description"),
                     wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
                     offerings=offerings,
-                    twitter_handle=agent_data.get("twitterHandle")
+                    twitter_handle=agent_data.get("twitterHandle"),
+                    metrics=agent_data.get("metrics")
                 ))
             return agents
         except requests.exceptions.RequestException as e:
@@ -428,6 +446,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -461,6 +481,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -495,6 +517,8 @@ class VirtualsACP:
                 acp_client=self,
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
+                client_address=data.get("data", {}).get("clientAddress"),
+                evaluator_address=data.get("data", {}).get("evaluatorAddress"),
                 memos=memos,
                 phase=data.get("data", {}).get("phase"),
                 price=data.get("data", {}).get("price")

@@ -79,6 +79,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]
@@ -103,6 +105,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]
@@ -442,6 +446,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -475,6 +481,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -509,6 +517,8 @@ class VirtualsACP:
                 acp_client=self,
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
+                client_address=data.get("data", {}).get("clientAddress"),
+                evaluator_address=data.get("data", {}).get("evaluatorAddress"),
                 memos=memos,
                 phase=data.get("data", {}).get("phase"),
                 price=data.get("data", {}).get("price")

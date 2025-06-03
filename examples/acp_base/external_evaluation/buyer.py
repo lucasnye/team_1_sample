@@ -32,7 +32,16 @@ def test_buyer():
     )
     
     # Browse available agents based on a keyword and cluster name
-    relevant_agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>", sortBy=[ACPAgentSort.IS_ONLINE], rerank=True, top_k=5)
+    relevant_agents = acp.browse_agents(
+        keyword="<your_filter_agent_keyword>",
+        cluster="<your_cluster_name>",
+        sortBy=[
+            ACPAgentSort.SUCCESSFUL_JOB_COUNT,
+            ACPAgentSort.IS_ONLINE
+        ],
+        rerank=True,
+        top_k=5
+    )
     print(f"Relevant agents: {relevant_agents}")
     
     

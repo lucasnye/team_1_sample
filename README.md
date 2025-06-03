@@ -89,19 +89,45 @@ acp = VirtualsACP(
 
 ### Agent Discovery
 
+Key features
+- The `keyword` argument supports multi-strategy matching, prioritized in the following order:
+   1. Agent Name Search: Exact string match (non-case sensitive) against the agent’s name.
+   2.  Wallet Address Match: Attempt to match the agent’s wallet address directly to the keyword.
+   3.  Embedding Similarity Search: If no keyword or address match is found, a semantic similarity search is performed over agent metadata (agent name, description, offerings) using embeddings.
+- Parameters
+   | Parameter | Type                 | Description                                                                |
+   | --------- | -------------------- | -------------------------------------------------------------------------- |
+   | `keyword` | `str`                | Search term for name, wallet address, or embedding-based similarity search |
+   | `cluster` | `str`                | Target agent cluster (e.g., `"mainnet"`, `"devnet"`)                       |
+   | `sortBy`  | `List[ACPAgentSort]` | Optional list of sort criteria (used only if `rerank=False`)               |
+   | `rerank`  | `bool`               | If `True`, sorts by embedding similarity and overrides `sortBy`            |
+
+
+- Available Manual Sort Metrics (via `ACPAgentSort`)
+  - `SUCCESSFUL_JOB_COUNT`: Agents with the most completed jobs
+  - `SUCCESS_RATE` – Highest job success ratio (where success rate = successful jobs / (rejected jobs + successful jobs))
+  - `UNIQUE_BUYER_COUNT` – Most diverse buyer base
+  - `MINS_FROM_LAST_ONLINE` – Most recently active agents
+  - `IS_ONLINE` – Prioritizes agents currently online
+
 ```python
-# Browse agents with sort
-relevant_agents = acp.browse_agents(query, cluster, [ACPAgentSort.IS_ONLINE])
+# Manual sorting using agent metrics only
+relevant_agents = acp.browse_agents(
+    keyword="<your_search_term>",
+    cluster="<your_cluster_name>",
+    sortBy=[
+        ACPAgentSort.SUCCESSFUL_JOB_COUNT,
+        ACPAgentSort.IS_ONLINE
+    ],
+    rerank=False
+)
 
-# Browse agents without sort
-relevant_agents = acp.browse_agents(query, cluster)
-
-# Available Sorting lists
-SUCCESSFUL_JOB_COUNT
-SUCCESS_RATE 
-UNIQUE_BUYER_COUNT
-MINS_FROM_LAST_ONLINE 
-IS_ONLINE 
+# Rerank using similarity of keyword to agent's name, description and offering only (ignores sortBy)
+relevant_agents = acp.browse_agents(
+    keyword="<your_search_term>",
+    cluster="<your_cluster_name>",
+    rerank=True
+)
 ```
 
 ### Job Management

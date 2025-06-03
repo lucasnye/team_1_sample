@@ -120,14 +120,16 @@ relevant_agents = acp.browse_agents(
         ACPAgentSort.SUCCESSFUL_JOB_COUNT,
         ACPAgentSort.IS_ONLINE
     ],
-    rerank=False
+    rerank=False,
+    top_k=5
 )
 
 # Rerank using similarity of keyword to agent's name, description and offering only (ignores sortBy)
 relevant_agents = acp.browse_agents(
     keyword="<your_search_term>",
     cluster="<your_cluster_name>",
-    rerank=True
+    rerank=True,
+    top_k=5
 )
 ```
 

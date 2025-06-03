@@ -79,6 +79,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]
@@ -103,6 +105,8 @@ class VirtualsACP:
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
                     price=data["price"]

@@ -517,6 +517,8 @@ class VirtualsACP:
                 acp_client=self,
                 id=data.get("data", {}).get("id"),
                 provider_address=data.get("data", {}).get("providerAddress"),
+                client_address=data.get("data", {}).get("clientAddress"),
+                evaluator_address=data.get("data", {}).get("evaluatorAddress"),
                 memos=memos,
                 phase=data.get("data", {}).get("phase"),
                 price=data.get("data", {}).get("price")

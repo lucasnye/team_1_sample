@@ -2,6 +2,7 @@
 import json
 import signal
 import sys
+import threading
 import requests
 import time
 from datetime import datetime, timezone, timedelta
@@ -61,39 +62,31 @@ class VirtualsACP:
         """Default handler for job evaluation events."""
         return True,"Succesful"
     
-    def _on_room_joined(self, data):
-        print('Connected to room', data)
+    def _on_room_joined(self, data, callback=None):
+        print('Connected to room', data,callback)  # Send acknowledgment back to server
+        return True
 
     def _on_evaluate(self, data):
         if self.on_evaluate:
             print(f"Evaluating job {data}")
             try:
-                memos = [ACPMemo(
-                    id=memo["id"], 
-                    type=int(memo["memoType"]),
-                    content=memo["content"],
-                    next_phase=memo["nextPhase"],
-                ) for memo in data["memos"]]
-                
-                job = ACPJob(
-                    acp_client=self,
-                    id=data["id"],
-                    provider_address=data["providerAddress"],
-                    client_address=data["clientAddress"],
-                    evaluator_address=data["evaluatorAddress"],
-                    memos=memos,
-                    phase=data["phase"],
-                    price=data["price"]
-                )
-                self.on_evaluate(job)
+                threading.Thread(target=self.handle_evaluate, args=(data,)).start()
+                return True
             except Exception as e:
                 print(f"Error in onEvaluate handler: {e}")
+                return False
 
     def _on_new_task(self, data):
         if self.on_new_task:
             print("Received new task:", data["memos"])
             try:
-                memos = [ACPMemo(
+                threading.Thread(target=self.handle_new_task, args=(data,)).start()
+                return True
+            except Exception as e:
+                print(f"Error in onNewTask handler: {e}")
+                return False
+    def handle_new_task(self, data) -> None:
+        memos = [ACPMemo(
                     id=memo["id"], 
                     type=int(memo["memoType"]),
                     content=memo["content"],
@@ -101,7 +94,7 @@ class VirtualsACP:
                 ) for memo in data["memos"]]
                 
                 
-                job = ACPJob(
+        job = ACPJob(
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
@@ -111,15 +104,35 @@ class VirtualsACP:
                     phase=data["phase"],
                     price=data["price"]
                 )
+        print(f"Received new task: {job}")
+        self.on_new_task(job)
+        
+    def handle_evaluate(self, data) -> None:
+        memos = [ACPMemo(
+                    id=memo["id"], 
+                    type=int(memo["memoType"]),
+                    content=memo["content"],
+                    next_phase=memo["nextPhase"],
+                ) for memo in data["memos"]]
                 
-                self.on_new_task(job)
-            except Exception as e:
-                print(f"Error in onNewTask handler: {e}")
+        job = ACPJob(
+                    acp_client=self,
+                    id=data["id"],
+                    provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
+                    memos=memos,
+                    phase=data["phase"],
+                    price=data["price"]
+                )
+        print(f"Received evaluate: {job}")
+        self.on_evaluate(job)
 
     def _setup_socket_handlers(self) -> None:
         self.sio.on('roomJoined', self._on_room_joined)
         self.sio.on('onEvaluate', self._on_evaluate)
         self.sio.on('onNewTask', self._on_new_task)
+        
 
     def _connect_socket(self) -> None:
         """Connect to the socket server with appropriate authentication."""
@@ -135,6 +148,7 @@ class VirtualsACP:
                 self.acp_api_url,
                 auth=auth_data,
             )
+            
             
             def signal_handler(sig, frame):
                 self.sio.disconnect()

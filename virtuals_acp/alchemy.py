@@ -48,7 +48,6 @@ class AlchemyRPCClient:
         self.base_url = base_url
         self.session = requests.Session()
         self.session.headers.update({
-            "Authorization": f"Bearer TIcSRyHh_Jsvwu-N2WfQ6lFZPFTmo0D_",
             "Content-Type": "application/json"
         })
 
@@ -193,7 +192,7 @@ class AlchemyAccountKit:
                     "context": self.permissions_context
                 },
                 "paymasterService": {
-                    "policyId": "186aaa4a-5f57-4156-83fb-e456365a8820"
+                    "policyId": BASE_SEPOLIA_CONFIG.alchemy_policy_id
                 }
             }
 

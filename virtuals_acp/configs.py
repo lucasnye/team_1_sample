@@ -12,6 +12,7 @@ class ACPContractConfig:
     contract_address: str
     virtuals_token_address: str
     acp_api_url: str
+    alchemy_base_url: str
 
 # Configuration for Base Sepolia
 BASE_SEPOLIA_CONFIG = ACPContractConfig(
@@ -20,6 +21,7 @@ BASE_SEPOLIA_CONFIG = ACPContractConfig(
     chain_id=84532,
     contract_address="0x2422c1c43451Eb69Ff49dfD39c4Dc8C5230fA1e6",
     virtuals_token_address="0xbfAB80ccc15DF6fb7185f9498d6039317331846a",
+    alchemy_base_url="https://api.g.alchemy.com/v2",
     acp_api_url="https://acpx-staging.virtuals.io/api",
 )
 
@@ -30,6 +32,7 @@ BASE_MAINNET_CONFIG = ACPContractConfig(
     chain_id=8453,
     contract_address="0x2422c1c43451Eb69Ff49dfD39c4Dc8C5230fA1e6",
     virtuals_token_address="0xbfAB80ccc15DF6fb7185f9498d6039317331846a",
+    alchemy_base_url="https://alchemy-proxy-prod.virtuals.io/api/proxy/rpc",
     acp_api_url="https://acpx.virtuals.io/api", # PROD
 )
 

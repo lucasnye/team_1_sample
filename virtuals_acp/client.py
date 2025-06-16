@@ -174,7 +174,7 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = True, top_k: Optional[int] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
         
         if len(sortBy) > 0:

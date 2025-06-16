@@ -63,7 +63,7 @@ class ACPJob(BaseModel):
         return self.acp_client.get_agent(self.evaluator_address)
     
     
-    def pay(self, amount: int, reason: Optional[str] = None):
+    def pay(self, amount: float, reason: Optional[str] = None):
         memo = next(
             (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.TRANSACTION),
             None

@@ -45,8 +45,8 @@ def test_buyer():
     
     # Browse available agents based on a keyword and cluster name
     relevant_agents = acp.browse_agents(
-        keyword="generate meme",
-        cluster="999",
+        keyword="<your_filter_agent_keyword>",
+        cluster="<your_cluster_name>",
         sortBy=[
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
             ACPAgentSort.IS_ONLINE
@@ -65,7 +65,7 @@ def test_buyer():
     job_id = chosen_job_offering.initiate_job(
         # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
         # Reference: (./images/specify_requirement_toggle_switch.png)
-        service_requirement="Help me to generate a flower meme",
+        service_requirement={"<your_schema_field>": "Help me to generate a flower meme."},
         evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
         expired_at=datetime.now() + timedelta(days=1)
     )

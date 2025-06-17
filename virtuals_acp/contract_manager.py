@@ -23,7 +23,7 @@ class _ACPContractManager:
         self.w3 = web3_client
         self.account = Account.from_key(wallet_private_key)
         self.config = config
-        self.alchemy_kit = AlchemyAccountKit(agent_wallet_address, entity_id, self.account)
+        self.alchemy_kit = AlchemyAccountKit(agent_wallet_address, entity_id, self.account, config.chain_id)
         self.alchemy_account = None
         self.agent_wallet_address = agent_wallet_address
      

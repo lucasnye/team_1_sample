@@ -225,7 +225,8 @@ class VirtualsACP:
                     wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
                     offerings=offerings,
                     twitter_handle=agent_data.get("twitterHandle"),
-                    metrics=agent_data.get("metrics")
+                    metrics=agent_data.get("metrics"),
+                    processing_time=agent_data.get("processingTime","")
                 ))
             return agents
         except requests.exceptions.RequestException as e:
@@ -255,7 +256,6 @@ class VirtualsACP:
         )
         
         print(f"User op hash: {user_op_hash}")
-        
         
         time.sleep(retry_delay) 
         for attempt in range(retry_count):
@@ -623,7 +623,9 @@ class VirtualsACP:
                 description=agent_data.get("description"), 
                 wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
                 offerings=offerings,
-                twitter_handle=agent_data.get("twitterHandle")
+                twitter_handle=agent_data.get("twitterHandle"),
+                metrics=agent_data.get("metrics"),
+                processing_time=agent_data.get("processingTime","")
             )
             
         except requests.exceptions.RequestException as e:

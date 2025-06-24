@@ -196,6 +196,11 @@ class VirtualsACP:
             
         if cluster:
             url += f"&filters[cluster]={cluster}"
+        
+        if self.config.chain_env == "base-sepolia":
+            url += f"&filters[hasGraduated]=false"
+        else:
+            url += f"&filters[hasGraduated]=true"
             
         try:
             response = requests.get(url)

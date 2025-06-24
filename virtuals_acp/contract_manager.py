@@ -3,7 +3,7 @@
 import json
 import time
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 import requests
 
 from eth_account import Account
@@ -34,13 +34,13 @@ class _ACPContractManager:
             address=Web3.to_checksum_address(config.virtuals_token_address), abi=ERC20_ABI
         )
         
-    def validate_transaction(self, hash_value: str) -> object:
+    def validate_transaction(self, hash_value: str) -> Dict[str, Any]:
         try:
             return self.alchemy_kit.get_calls_status(hash_value)
         except Exception as e:
             raise Exception(f"Failed to get job_id {e}")
     
-    def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> Tuple[dict, str]:
+    def _sign_transaction(self, method_name: str, args: list, contract_address: Optional[str] = None) -> str:
         if contract_address:
             encoded_data = self.token_contract.encode_abi(method_name, args=args)
         else:
@@ -64,7 +64,7 @@ class _ACPContractManager:
         provider_address: str,
         evaluator_address: str,
         expire_at: datetime
-    ) -> dict:
+    ) -> str:
         retries = 3
         while retries > 0:
             try:
@@ -83,9 +83,10 @@ class _ACPContractManager:
                     print(f"Failed to create job: {e}")
                 retries -= 1
                 time.sleep(2 * (3 - retries))
+        raise Exception("Failed to create job")
                 
 
-    def approve_allowance(self, agent_wallet_address: str, price_in_wei: int) -> str:
+    def approve_allowance(self, price_in_wei: int) -> Dict[str, Any]:
         user_op_hash = self._sign_transaction(
             "approve", 
             [self.config.contract_address, price_in_wei],
@@ -110,9 +111,12 @@ class _ACPContractManager:
                     print(f"Error during approve_allowance: {e}")
                     raise
                 time.sleep(2 * (3 - retries))
+                
+        raise Exception("Failed to approve allowance")
+                
 
         
-    def create_memo(self, agent_wallet_address: str, job_id: int, content: str, memo_type: MemoType, is_secured: bool, next_phase: ACPJobPhase) -> str:
+    def create_memo(self, job_id: int, content: str, memo_type: MemoType, is_secured: bool, next_phase: ACPJobPhase) -> Dict[str, Any]:
         user_op_hash = self._sign_transaction(
             "createMemo", 
             [job_id, content, memo_type.value, is_secured, next_phase.value]
@@ -137,15 +141,16 @@ class _ACPContractManager:
                     print(f"Error during create_memo: {e}")
                     raise
                 time.sleep(2 * (3 - retries))
+                
+        raise Exception("Failed to create memo")
 
 
     def sign_memo(
         self,
-        agent_wallet_address: str,
         memo_id: int,
         is_approved: bool,
         reason: Optional[str] = ""
-    ) -> str:
+    ) -> Dict[str, Any]:
         user_op_hash = self._sign_transaction(
             "signMemo", 
             [memo_id, is_approved, reason]
@@ -172,7 +177,7 @@ class _ACPContractManager:
                 
         raise Exception(f"Failed to sign memo")
     
-    def set_budget(self, agent_wallet_address: str, job_id: int, budget: int) -> str:
+    def set_budget(self, job_id: int, budget: int) -> Dict[str, Any]:
         user_op_hash = self._sign_transaction(
             "setBudget", 
             [job_id, budget]
@@ -198,4 +203,4 @@ class _ACPContractManager:
                     raise
                 time.sleep(2 * (3 - retries))
                 
-        
+        raise Exception("Failed to set budget")

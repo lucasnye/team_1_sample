@@ -34,7 +34,7 @@ BASE_MAINNET_CONFIG = ACPContractConfig(
     chain_id=8453,
     contract_address="0x6a1FE26D54ab0d3E1e3168f2e0c0cDa5cC0A0A4A",
     virtuals_token_address="0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b",
-    alchemy_base_url="https://alchemy-proxy-prod.virtuals.io/api/proxy/rpc",
+    alchemy_base_url="https://alchemy-proxy-prod.virtuals.io/api/proxy/wallet",
     alchemy_policy_id="186aaa4a-5f57-4156-83fb-e456365a8820",
     acp_api_url="https://acpx.virtuals.io/api", # PROD
 )

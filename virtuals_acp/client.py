@@ -6,7 +6,7 @@ import threading
 import requests
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple, Union, Dict, Any
+from typing import List, Optional, Tuple, Union, Dict, Any, Callable
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 from eth_account import Account
@@ -27,9 +27,9 @@ class VirtualsACP:
                  wallet_private_key: str, 
                  entity_id: int,
                  agent_wallet_address: Optional[str] = None, 
-                 config: Optional[ACPContractConfig] = DEFAULT_CONFIG,
-                 on_new_task: Optional[callable] = None,
-                 on_evaluate: Optional[callable] = None):
+                 config: ACPContractConfig = DEFAULT_CONFIG,
+                 on_new_task: Optional[Callable] = None,
+                 on_evaluate: Optional[Callable] = None):
         
         self.config = config
         self.w3 = Web3(Web3.HTTPProvider(config.rpc_url))
@@ -64,8 +64,8 @@ class VirtualsACP:
         """Default handler for job evaluation events."""
         return True,"Succesful"
     
-    def _on_room_joined(self, data, callback=None):
-        print('Connected to room', data,callback)  # Send acknowledgment back to server
+    def _on_room_joined(self, data):
+        print('Connected to room', data)  # Send acknowledgment back to server
         return True
 
     def _on_evaluate(self, data):
@@ -83,8 +83,6 @@ class VirtualsACP:
 
     def _on_new_task(self, data):
         if self.on_new_task:
-            print(data, "data")
-            print("Received new task:", data["memos"])
             try:
                 threading.Thread(target=self.handle_new_task, args=(data,)).start()
                 return True
@@ -94,7 +92,7 @@ class VirtualsACP:
     def handle_new_task(self, data) -> None:
         memos = [ACPMemo(
                     id=memo["id"], 
-                    type=int(memo["memoType"]),
+                    type=MemoType(int(memo["memoType"])),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
@@ -111,12 +109,13 @@ class VirtualsACP:
                     price=data["price"]
                 )
         print(f"Received new task: {job}")
-        self.on_new_task(job)
+        if self.on_new_task:
+            self.on_new_task(job)
         
     def handle_evaluate(self, data) -> None:
         memos = [ACPMemo(
                     id=memo["id"], 
-                    type=int(memo["memoType"]),
+                    type=MemoType(int(memo["memoType"])),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
@@ -180,10 +179,10 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[List[ACPAgentSort]] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
         
-        if len(sortBy) > 0:
+        if sortBy and len(sortBy) > 0:
             url += f"&sort={','.join([s.value for s in sortBy])}"
             
         if rerank is True:
@@ -307,11 +306,10 @@ class VirtualsACP:
             raise Exception("Failed to create job")
         
         amount_in_wei = self.w3.to_wei(amount, "ether")
-        self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
+        self.contract_manager.set_budget(job_id, amount_in_wei)
         time.sleep(10)
         
         self.contract_manager.create_memo(
-            self.agent_address,
             job_id,
             service_requirement if isinstance(service_requirement, str) else json.dumps(service_requirement),
             MemoType.MESSAGE,
@@ -349,14 +347,17 @@ class VirtualsACP:
         accept: bool, 
         reason: Optional[str] = ""
     ) -> str:
-        
         try:
-            tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
+            print(f"Responding to job {job_id} with memo {memo_id}, response = {accept}, reason = {reason}, agent_address = {self.agent_address}")
+            data = self.contract_manager.sign_memo(memo_id, accept, reason or "")
+            tx_hash = data.get('receipts',[])[0].get('txHash')
+            if (not accept):
+                exit()
+                
             time.sleep(10)
             
             print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
             self.contract_manager.create_memo(
-                self.agent_address,
                 job_id,
                 f"{reason if reason else f'Job {job_id} accepted.'}",
                 MemoType.MESSAGE,
@@ -375,22 +376,21 @@ class VirtualsACP:
         memo_id: int, 
         amount: Union[float, str], 
         reason: Optional[str] = ""
-    ) -> Tuple[str, str, str, str]:
+    ) -> Dict[str, Any]:
         
         amount_in_wei = self.w3.to_wei(amount, "ether")
         time.sleep(10)
 
-        approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
+        self.contract_manager.approve_allowance(amount_in_wei)
         time.sleep(10)
 
-        sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
+        self.contract_manager.sign_memo(memo_id, True, reason or "")
         time.sleep(10)
         
         reason = f"{reason if reason else f'Job {job_id} paid.'}"
         print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
 
         return self.contract_manager.create_memo(
-            self.agent_address,
             job_id,
             reason,
             MemoType.MESSAGE,
@@ -404,14 +404,14 @@ class VirtualsACP:
         deliverable_content: str
     ) -> str:
         
-        tx_hash = self.contract_manager.create_memo(
-            self.agent_address,
+        data = self.contract_manager.create_memo(
             job_id,
             deliverable_content,
             MemoType.OBJECT_URL,
             is_secured=True,
             next_phase=ACPJobPhase.COMPLETED
         )
+        tx_hash = data.get('receipts',[])[0].get('txHash')
         # print(f"Deliverable submission tx: {tx_hash} for job {job_id}")
         return tx_hash
 
@@ -422,8 +422,8 @@ class VirtualsACP:
         reason: Optional[str] = ""
     ) -> str:
         
-        data = self.contract_manager.sign_memo(self.agent_address, memo_id_of_deliverable, accept, reason or "")
-        txHash = data.get('receipts',[])[0].get('txHash')
+        data = self.contract_manager.sign_memo(memo_id_of_deliverable, accept, reason or "")
+        txHash = data.get('receipts',[])[0].get('transactionHash')
         print(f"Evaluation (signMemo) tx: {txHash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
         return txHash
 
@@ -446,14 +446,16 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase")),
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                     ))
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
                     provider_address=job.get("providerAddress"),
+                    client_address=job.get("clientAddress"),
+                    evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
                     price=job.get("price")
@@ -480,9 +482,9 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
                 jobs.append(ACPJob(
                     acp_client=self,
@@ -515,9 +517,9 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
                 jobs.append(ACPJob(
                     acp_client=self,
@@ -551,9 +553,9 @@ class VirtualsACP:
             for memo in data.get("data", {}).get("memos", []):
                 memos.append(ACPMemo(
                     id=memo.get("id"),
-                    type=int(memo.get("memoType")),
+                    type=MemoType(int(memo.get("memoType"))),
                     content=memo.get("content"),
-                    next_phase=int(memo.get("nextPhase"))
+                    next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                 ))
             return ACPJob(
                 acp_client=self,
@@ -584,9 +586,9 @@ class VirtualsACP:
             
             return ACPMemo(
                 id=data.get("data", {}).get("id"),
-                type=int(data.get("data", {}).get("memoType")),
+                type=MemoType(int(data.get("data", {}).get("memoType"))),
                 content=data.get("data", {}).get("content"),
-                next_phase=int(data.get("data", {}).get("nextPhase"))
+                next_phase=ACPJobPhase(int(data.get("data", {}).get("nextPhase")))
             )
             
         except Exception as e:

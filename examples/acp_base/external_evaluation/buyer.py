@@ -23,6 +23,15 @@ def test_buyer():
                     break
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
+        elif job.phase == ACPJobPhase.REJECTED:
+            print("Job rejected", job)
+            
+    if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
+        raise Exception("WHITELISTED_WALLET_PRIVATE_KEY is not set")
+    if env.BUYER_ENTITY_ID is None:
+        raise Exception("BUYER_ENTITY_ID is not set")
+    if env.BUYER_AGENT_WALLET_ADDRESS is None:
+        raise Exception("BUYER_AGENT_WALLET_ADDRESS is not set")
             
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,

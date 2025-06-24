@@ -1,7 +1,5 @@
 import os
-import time
-import json
-from typing import Dict, Any, List, Optional, Union, Literal
+from typing import Dict, Any, List, Optional, Union
 from dataclasses import dataclass
 from enum import Enum
 
@@ -9,8 +7,7 @@ import requests
 from web3 import Web3
 from eth_account import Account
 from eth_account.messages import encode_typed_data
-from eth_utils import to_hex, to_checksum_address
-from pydantic import BaseModel
+from eth_utils.conversions import to_hex
 from eth_account.messages import encode_defunct
 
 
@@ -94,7 +91,7 @@ class AlchemyRPCClient:
         """Create a session"""
         return self.request("wallet_createSession", [params])
     
-    def wallet_get_calls_status(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def wallet_get_calls_status(self, params: str) -> Dict[str, Any]:
         """Get calls status"""
         return self.request("wallet_getCallsStatus", [params])
 
@@ -143,23 +140,12 @@ class AlchemyAccountKit:
         else:
             raise ValueError(f"Unsupported signature request type: {request.type}")
 
-    def request_account(self, owner_account: Optional[Account] = None) -> Dict[str, Any]:
-        if owner_account is None:
-            owner_account = self.create_owner_account()
-        else:
-            self.owner_account = owner_account
-
-        result = self.rpc_client.wallet_request_account(owner_account.address)
-
-        self.account_address = result["accountAddress"]
-        return result
-
     def create_account(self, params: Dict[str, Any]) -> Dict[str, Any]:
         result = self.rpc_client.wallet_create_account(params)
 
         return result
 
-    def create_session(self) -> Dict[str, Any]:
+    def create_session(self) -> None:
         if not self.account_address:
             raise ValueError("Must request account first")
 

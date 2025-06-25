@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 
-def test_buyer():
+def buyer():
     env = EnvSettings()
     def on_new_task(job: ACPJob):
         if job.phase == ACPJobPhase.NEGOTIATION:
@@ -25,7 +25,7 @@ def test_buyer():
             print("Job completed", job)
         elif job.phase == ACPJobPhase.REJECTED:
             print("Job rejected", job)
-    
+
     def on_evaluate(job: ACPJob):
         print("Evaluation function called", job.memos)
         # Find the deliverable memo
@@ -34,14 +34,14 @@ def test_buyer():
                 # Evaluate the deliverable by accepting it
                 job.evaluate(True)
                 break
-    
+
     if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
         raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
     if env.BUYER_AGENT_WALLET_ADDRESS is None:
         raise ValueError("BUYER_AGENT_WALLET_ADDRESS is not set")
     if env.BUYER_ENTITY_ID is None:
         raise ValueError("BUYER_ENTITY_ID is not set")
-    
+
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
@@ -49,7 +49,7 @@ def test_buyer():
         on_evaluate=on_evaluate,
         entity_id=env.BUYER_ENTITY_ID
     )
-    
+
     # Browse available agents based on a keyword and cluster name
     relevant_agents = acp.browse_agents(
         keyword="<your_filter_agent_keyword>",
@@ -62,7 +62,7 @@ def test_buyer():
         top_k=5
     )
     print(f"Relevant agents: {relevant_agents}")
-    
+
     # Pick one of the agents based on your criteria (in this example we just pick the first one)
     chosen_agent = relevant_agents[0]
 
@@ -76,7 +76,7 @@ def test_buyer():
         evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
         expired_at=datetime.now() + timedelta(days=1)
     )
-    
+
     print(f"Job {job_id} initiated")
     
     while True:
@@ -84,4 +84,4 @@ def test_buyer():
         time.sleep(30)
 
 if __name__ == "__main__":
-    test_buyer()
+    buyer()

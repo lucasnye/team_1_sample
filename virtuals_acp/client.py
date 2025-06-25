@@ -353,7 +353,6 @@ class VirtualsACP:
         reason: Optional[str] = ""
     ) -> str:
         try:
-            print(f"Responding to job {job_id} with memo {memo_id}, response = {accept}, reason = {reason}, agent_address = {self.agent_address}")
             data = self.contract_manager.sign_memo(memo_id, accept, reason or "")
             tx_hash = data.get('receipts',[])[0].get('txHash')
             if (not accept):

@@ -4,7 +4,7 @@ import time
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
 from virtuals_acp.models import ACPAgentSort, ACPJobPhase
-from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
+from virtuals_acp.configs import BASE_MAINNET_CONFIG
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
@@ -46,7 +46,7 @@ def test_buyer():
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
-        config=BASE_SEPOLIA_CONFIG,
+        config=BASE_MAINNET_CONFIG,
         on_new_task=on_new_task,
         on_evaluate=on_evaluate,
         entity_id=env.BUYER_ENTITY_ID
@@ -87,6 +87,3 @@ def test_buyer():
 
 if __name__ == "__main__":
     test_buyer()
-
-
-

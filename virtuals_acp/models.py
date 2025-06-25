@@ -50,5 +50,6 @@ class IACPAgent:
     symbol: Optional[str] = None
     virtual_agent_id: Optional[str] = None
     metrics: Optional[Dict[str, Any]] = None
+    processing_time: Optional[str] = None
 
 

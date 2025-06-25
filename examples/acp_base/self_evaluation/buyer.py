@@ -4,7 +4,7 @@ import time
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
 from virtuals_acp.models import ACPAgentSort, ACPJobPhase
-from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
+from virtuals_acp.configs import BASE_MAINNET_CONFIG
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
@@ -14,7 +14,6 @@ load_dotenv(override=True)
 
 def test_buyer():
     env = EnvSettings()
-
     def on_new_task(job: ACPJob):
         if job.phase == ACPJobPhase.NEGOTIATION:
             # Check if there's a memo that indicates next phase is TRANSACTION
@@ -25,6 +24,8 @@ def test_buyer():
                     break
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
+        elif job.phase == ACPJobPhase.REJECTED:
+            print("Job rejected", job)
     
     def on_evaluate(job: ACPJob):
         print("Evaluation function called", job.memos)
@@ -35,12 +36,20 @@ def test_buyer():
                 job.evaluate(True)
                 break
     
+    if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
+        raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
+    if env.BUYER_AGENT_WALLET_ADDRESS is None:
+        raise ValueError("BUYER_AGENT_WALLET_ADDRESS is not set")
+    if env.BUYER_ENTITY_ID is None:
+        raise ValueError("BUYER_ENTITY_ID is not set")
+    
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
-        config=BASE_SEPOLIA_CONFIG,
+        config=BASE_MAINNET_CONFIG,
         on_new_task=on_new_task,
-        on_evaluate=on_evaluate
+        on_evaluate=on_evaluate,
+        entity_id=env.BUYER_ENTITY_ID
     )
     
     # Browse available agents based on a keyword and cluster name

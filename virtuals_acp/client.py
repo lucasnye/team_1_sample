@@ -259,8 +259,6 @@ class VirtualsACP:
             self.agent_address, provider_address, eval_addr, expired_at
         )
         
-        print(f"User op hash: {user_op_hash}")
-        
         time.sleep(retry_delay) 
         for attempt in range(retry_count):
             try:

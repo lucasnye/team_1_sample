@@ -1,4 +1,4 @@
-import time
+import threading
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
 from virtuals_acp.env import EnvSettings
@@ -25,11 +25,11 @@ def evaluator():
         on_evaluate=on_evaluate,
         entity_id=env.EVALUATOR_ENTITY_ID
     )
-    
+
+    print("Waiting for evaluation tasks...")
     # Keep the script running to listen for evaluation tasks
-    while True:
-        print("Waiting for evaluation tasks...")
-        time.sleep(30)
+    threading.Event().wait()
+
 
 if __name__ == "__main__":
     evaluator()

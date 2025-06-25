@@ -1,4 +1,4 @@
-import time
+import threading
 import json
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
@@ -43,11 +43,11 @@ def seller():
         on_new_task=on_new_task,
         entity_id=env.SELLER_ENTITY_ID
     )
-    
+
+    print("Waiting for new task...")
     # Keep the script running to listen for new tasks
-    while True:
-        print("Waiting for new task...")
-        time.sleep(30)
+    threading.Event().wait()
+
 
 if __name__ == "__main__":
     seller()

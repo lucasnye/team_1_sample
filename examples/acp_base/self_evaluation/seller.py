@@ -2,7 +2,6 @@ import time
 import json
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
-from virtuals_acp.configs import BASE_SEPOLIA_CONFIG
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
@@ -30,13 +29,18 @@ def seller():
                     }
                     job.deliver(json.dumps(delivery_data))
                     break
+                
+    if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
+        raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
+    if env.SELLER_ENTITY_ID is None:
+        raise ValueError("SELLER_ENTITY_ID is not set")
 
     # Initialize the ACP client
     acp_client = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.SELLER_AGENT_WALLET_ADDRESS,
-        config=BASE_SEPOLIA_CONFIG,
-        on_new_task=on_new_task
+        on_new_task=on_new_task,
+        entity_id=env.SELLER_ENTITY_ID
     )
     
     # Keep the script running to listen for new tasks

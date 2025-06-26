@@ -2,10 +2,11 @@
 import json
 import signal
 import sys
+import threading
 import requests
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple, Union, Dict, Any
+from typing import List, Optional, Tuple, Union, Dict, Any, Callable
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 from eth_account import Account
@@ -24,13 +25,15 @@ from virtuals_acp.memo import ACPMemo
 class VirtualsACP:
     def __init__(self, 
                  wallet_private_key: str, 
+                 entity_id: int,
                  agent_wallet_address: Optional[str] = None, 
-                 config: Optional[ACPContractConfig] = DEFAULT_CONFIG,
-                 on_new_task: Optional[callable] = None,
-                 on_evaluate: Optional[callable] = None):
+                 config: ACPContractConfig = DEFAULT_CONFIG,
+                 on_new_task: Optional[Callable] = None,
+                 on_evaluate: Optional[Callable] = None):
         
         self.config = config
         self.w3 = Web3(Web3.HTTPProvider(config.rpc_url))
+        self.entity_id = entity_id
 
         if config.chain_env == "base-sepolia":
             self.w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
@@ -47,7 +50,7 @@ class VirtualsACP:
             # print(f"Warning: agent_wallet_address not provided, defaulting to signer EOA: {self._agent_wallet_address}")
 
         # Initialize the contract manager here
-        self.contract_manager = _ACPContractManager(self.w3, config, wallet_private_key)
+        self.contract_manager = _ACPContractManager(self.w3, self._agent_wallet_address, entity_id, config, wallet_private_key)
         self.acp_api_url = config.acp_api_url
         
         # Socket.IO setup
@@ -62,48 +65,34 @@ class VirtualsACP:
         return True,"Succesful"
     
     def _on_room_joined(self, data):
-        print('Connected to room', data)
+        print('Connected to room', data)  # Send acknowledgment back to server
+        return True
 
     def _on_evaluate(self, data):
+        print('--------------------------------')
+        print(f"Evaluating job {data}")
+        print('--------------------------------')
         if self.on_evaluate:
             print(f"Evaluating job {data}")
             try:
-                memos = [ACPMemo(
-                    id=memo["id"], 
-                    type=int(memo["memoType"]),
-                    content=memo["content"],
-                    next_phase=memo["nextPhase"],
-                ) for memo in data["memos"]]
-                
-                context = data["context"]
-                if isinstance(context, str):
-                    try:
-                        context = json.loads(context)
-                    except json.JSONDecodeError:
-                        context = None 
-                
-                job = ACPJob(
-                    acp_client=self,
-                    id=data["id"],
-                    provider_address=data["providerAddress"],
-                    client_address=data["clientAddress"],
-                    evaluator_address=data["evaluatorAddress"],
-                    memos=memos,
-                    phase=data["phase"],
-                    price=data["price"],
-                    context=context
-                )
-                self.on_evaluate(job)
+                threading.Thread(target=self.handle_evaluate, args=(data,)).start()
+                return True
             except Exception as e:
                 print(f"Error in onEvaluate handler: {e}")
+                return False
 
     def _on_new_task(self, data):
         if self.on_new_task:
-            print("Received new task:", data["memos"])
             try:
-                memos = [ACPMemo(
+                threading.Thread(target=self.handle_new_task, args=(data,)).start()
+                return True
+            except Exception as e:
+                print(f"Error in onNewTask handler: {e}")
+                return False
+    def handle_new_task(self, data) -> None:
+        memos = [ACPMemo(
                     id=memo["id"], 
-                    type=int(memo["memoType"]),
+                    type=MemoType(int(memo["memoType"])),
                     content=memo["content"],
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
@@ -126,15 +115,44 @@ class VirtualsACP:
                     price=data["price"],
                     context=context
                 )
+        print(f"Received new task: {job}")
+        if self.on_new_task:
+            self.on_new_task(job)
+        
+    def handle_evaluate(self, data) -> None:
+        memos = [ACPMemo(
+                    id=memo["id"], 
+                    type=MemoType(int(memo["memoType"])),
+                    content=memo["content"],
+                    next_phase=memo["nextPhase"],
+                ) for memo in data["memos"]]
                 
-                self.on_new_task(job)
-            except Exception as e:
-                print(f"Error in onNewTask handler: {e}")
+                context = data["context"]
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None 
+                
+                job = ACPJob(
+                    acp_client=self,
+                    id=data["id"],
+                    provider_address=data["providerAddress"],
+                    client_address=data["clientAddress"],
+                    evaluator_address=data["evaluatorAddress"],
+                    memos=memos,
+                    phase=data["phase"],
+                    price=data["price"],
+                    context=context
+                )
+        print(f"Received evaluate: {job}")
+        self.on_evaluate(job)
 
     def _setup_socket_handlers(self) -> None:
         self.sio.on('roomJoined', self._on_room_joined)
         self.sio.on('onEvaluate', self._on_evaluate)
         self.sio.on('onNewTask', self._on_new_task)
+        
 
     def _connect_socket(self) -> None:
         """Connect to the socket server with appropriate authentication."""
@@ -150,6 +168,7 @@ class VirtualsACP:
                 self.acp_api_url,
                 auth=auth_data,
             )
+            
             
             def signal_handler(sig, frame):
                 self.sio.disconnect()
@@ -175,10 +194,10 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[ACPAgentSort] = None, rerank: Optional[bool] = False, top_k: Optional[int] = None) -> List[IACPAgent]:
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[List[ACPAgentSort]] = None, rerank: Optional[bool] = True, top_k: Optional[int] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
         
-        if len(sortBy) > 0:
+        if sortBy and len(sortBy) > 0:
             url += f"&sort={','.join([s.value for s in sortBy])}"
             
         if rerank is True:
@@ -192,6 +211,11 @@ class VirtualsACP:
             
         if cluster:
             url += f"&filters[cluster]={cluster}"
+        
+        if self.config.chain_env == "base-sepolia":
+            url += f"&filters[hasGraduated]=false"
+        else:
+            url += f"&filters[hasGraduated]=true"
             
         try:
             response = requests.get(url)
@@ -220,7 +244,8 @@ class VirtualsACP:
                     wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
                     offerings=offerings,
                     twitter_handle=agent_data.get("twitterHandle"),
-                    metrics=agent_data.get("metrics")
+                    metrics=agent_data.get("metrics"),
+                    processing_time=agent_data.get("processingTime","")
                 ))
             return agents
         except requests.exceptions.RequestException as e:
@@ -245,29 +270,47 @@ class VirtualsACP:
         retry_count = 3
         retry_delay = 3
         
-        tx_hash = self.contract_manager.create_job(
+        user_op_hash = self.contract_manager.create_job(
             self.agent_address, provider_address, eval_addr, expired_at
         )
-
+        
         time.sleep(retry_delay) 
         for attempt in range(retry_count):
             try:
-                response = self.contract_manager.validate_transaction(tx_hash['txHash'])
-                data = response.get("data", {})
-                if not data:
-                    raise Exception("Invalid tx_hash!")
+                response = self.contract_manager.validate_transaction(user_op_hash)
                 
-                if data.get("status") == "retry":
-                    raise Exception("Transaction failed, retrying...")
-                
-                if data.get("status") == "failed":
-                    break
-                
-                if data.get("status") == "success":
-                    job_id = int(data.get("result").get("jobId"))
+                if response.get("status") == 200:
+                    logs = response.get("receipts", [])[0].get("logs", [])
+                    contract_logs = next(
+                        (log for log in logs if log.get("address", "").lower() == self.contract_manager.config.contract_address.lower()),
+                        None
+                    )
                     
-                if job_id is not None and job_id != "":
-                    break  
+                    if not contract_logs:
+                        raise Exception("Failed to get contract logs")
+                        
+                    try:
+                        job_id = int(Web3.to_int(hexstr=contract_logs.get("data")))
+                        break
+                    except (ValueError, TypeError, AttributeError):
+                        raise Exception("Failed to parse job ID from contract logs")
+                
+                
+                # data = response.get("data", {})
+                # if not data:
+                #     raise Exception("Invalid tx_hash!")
+                
+                # if data.get("status") == "retry":
+                #     raise Exception("Transaction failed, retrying...")
+                
+                # if data.get("status") == "failed":
+                #     break
+                
+                # if data.get("status") == "success":
+                #     job_id = int(data.get("result").get("jobId"))
+                    
+                # if job_id is not None and job_id != "":
+                #     break  
                 
             except Exception as e:
                 if (attempt == retry_count - 1):
@@ -281,11 +324,10 @@ class VirtualsACP:
             raise Exception("Failed to create job")
         
         amount_in_wei = self.w3.to_wei(amount, "ether")
-        set_budget_tx_hash = self.contract_manager.set_budget(self.agent_address, job_id, amount_in_wei)
+        self.contract_manager.set_budget(job_id, amount_in_wei)
         time.sleep(10)
         
         self.contract_manager.create_memo(
-            self.agent_address,
             job_id,
             service_requirement if isinstance(service_requirement, str) else json.dumps(service_requirement),
             MemoType.MESSAGE,
@@ -323,14 +365,16 @@ class VirtualsACP:
         accept: bool, 
         reason: Optional[str] = ""
     ) -> str:
-        
         try:
-            tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, accept, reason or "")
+            data = self.contract_manager.sign_memo(memo_id, accept, reason or "")
+            tx_hash = data.get('receipts',[])[0].get('txHash')
+            if (not accept):
+                exit()
+                
             time.sleep(10)
             
             print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
             self.contract_manager.create_memo(
-                self.agent_address,
                 job_id,
                 f"{reason if reason else f'Job {job_id} accepted.'}",
                 MemoType.MESSAGE,
@@ -349,22 +393,21 @@ class VirtualsACP:
         memo_id: int, 
         amount: Union[float, str], 
         reason: Optional[str] = ""
-    ) -> Tuple[str, str, str, str]:
+    ) -> Dict[str, Any]:
         
         amount_in_wei = self.w3.to_wei(amount, "ether")
         time.sleep(10)
 
-        approve_tx_hash = self.contract_manager.approve_allowance(self.agent_address, amount_in_wei)
+        self.contract_manager.approve_allowance(amount_in_wei)
         time.sleep(10)
 
-        sign_memo_tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id, True, reason or "")
+        self.contract_manager.sign_memo(memo_id, True, reason or "")
         time.sleep(10)
         
         reason = f"{reason if reason else f'Job {job_id} paid.'}"
         print(f"Paid for job {job_id} with memo {memo_id} and amount {amount} and reason {reason}")
 
         return self.contract_manager.create_memo(
-            self.agent_address,
             job_id,
             reason,
             MemoType.MESSAGE,
@@ -378,14 +421,14 @@ class VirtualsACP:
         deliverable_content: str
     ) -> str:
         
-        tx_hash = self.contract_manager.create_memo(
-            self.agent_address,
+        data = self.contract_manager.create_memo(
             job_id,
             deliverable_content,
             MemoType.OBJECT_URL,
             is_secured=True,
             next_phase=ACPJobPhase.COMPLETED
         )
+        tx_hash = data.get('receipts',[])[0].get('txHash')
         # print(f"Deliverable submission tx: {tx_hash} for job {job_id}")
         return tx_hash
 
@@ -396,9 +439,10 @@ class VirtualsACP:
         reason: Optional[str] = ""
     ) -> str:
         
-        tx_hash = self.contract_manager.sign_memo(self.agent_address, memo_id_of_deliverable, accept, reason or "")
-        print(f"Evaluation (signMemo) tx: {tx_hash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
-        return tx_hash
+        data = self.contract_manager.sign_memo(memo_id_of_deliverable, accept, reason or "")
+        txHash = data.get('receipts',[])[0].get('transactionHash')
+        print(f"Evaluation (signMemo) tx: {txHash} for deliverable memo ID {memo_id_of_deliverable} is {accept}")
+        return txHash
 
 
     def get_active_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
@@ -419,9 +463,9 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase")),
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                     ))
                     
                 context = job.get("context")
@@ -464,9 +508,9 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
     
                 context = job.get("context")
@@ -508,9 +552,9 @@ class VirtualsACP:
                 for memo in job.get("memos", []):
                     memos.append(ACPMemo(
                         id=memo.get("id"),
-                        type=int(memo.get("memoType")),
+                        type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
-                        next_phase=int(memo.get("nextPhase"))
+                        next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
                     
                 context = job.get("context")
@@ -553,9 +597,9 @@ class VirtualsACP:
             for memo in data.get("data", {}).get("memos", []):
                 memos.append(ACPMemo(
                     id=memo.get("id"),
-                    type=int(memo.get("memoType")),
+                    type=MemoType(int(memo.get("memoType"))),
                     content=memo.get("content"),
-                    next_phase=int(memo.get("nextPhase"))
+                    next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                 ))
 
             context = data.get("data", {}).get("context")
@@ -595,9 +639,9 @@ class VirtualsACP:
             
             return ACPMemo(
                 id=data.get("data", {}).get("id"),
-                type=int(data.get("data", {}).get("memoType")),
+                type=MemoType(int(data.get("data", {}).get("memoType"))),
                 content=data.get("data", {}).get("content"),
-                next_phase=int(data.get("data", {}).get("nextPhase"))
+                next_phase=ACPJobPhase(int(data.get("data", {}).get("nextPhase")))
             )
             
         except Exception as e:
@@ -635,7 +679,9 @@ class VirtualsACP:
                 description=agent_data.get("description"), 
                 wallet_address=Web3.to_checksum_address(agent_data["walletAddress"]),
                 offerings=offerings,
-                twitter_handle=agent_data.get("twitterHandle")
+                twitter_handle=agent_data.get("twitterHandle"),
+                metrics=agent_data.get("metrics"),
+                processing_time=agent_data.get("processingTime","")
             )
             
         except requests.exceptions.RequestException as e:

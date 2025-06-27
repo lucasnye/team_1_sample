@@ -97,24 +97,24 @@ class VirtualsACP:
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
                 
-                context = data["context"]
-                if isinstance(context, str):
-                    try:
-                        context = json.loads(context)
-                    except json.JSONDecodeError:
-                        context = None 
-                
-                job = ACPJob(
-                    acp_client=self,
-                    id=data["id"],
-                    provider_address=data["providerAddress"],
-                    client_address=data["clientAddress"],
-                    evaluator_address=data["evaluatorAddress"],
-                    memos=memos,
-                    phase=data["phase"],
-                    price=data["price"],
-                    context=context
-                )
+        context = data["context"]
+        if isinstance(context, str):
+            try:
+                context = json.loads(context)
+            except json.JSONDecodeError:
+                context = None 
+        
+        job = ACPJob(
+            acp_client=self,
+            id=data["id"],
+            provider_address=data["providerAddress"],
+            client_address=data["clientAddress"],
+            evaluator_address=data["evaluatorAddress"],
+            memos=memos,
+            phase=data["phase"],
+            price=data["price"],
+            context=context
+        )
         print(f"Received new task: {job}")
         if self.on_new_task:
             self.on_new_task(job)
@@ -127,24 +127,24 @@ class VirtualsACP:
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
                 
-                context = data["context"]
-                if isinstance(context, str):
-                    try:
-                        context = json.loads(context)
-                    except json.JSONDecodeError:
-                        context = None 
-                
-                job = ACPJob(
-                    acp_client=self,
-                    id=data["id"],
-                    provider_address=data["providerAddress"],
-                    client_address=data["clientAddress"],
-                    evaluator_address=data["evaluatorAddress"],
-                    memos=memos,
-                    phase=data["phase"],
-                    price=data["price"],
-                    context=context
-                )
+        context = data["context"]
+        if isinstance(context, str):
+            try:
+                context = json.loads(context)
+            except json.JSONDecodeError:
+                context = None 
+        
+        job = ACPJob(
+            acp_client=self,
+            id=data["id"],
+            provider_address=data["providerAddress"],
+            client_address=data["clientAddress"],
+            evaluator_address=data["evaluatorAddress"],
+            memos=memos,
+            phase=data["phase"],
+            price=data["price"],
+            context=context
+        )
         print(f"Received evaluate: {job}")
         self.on_evaluate(job)
 

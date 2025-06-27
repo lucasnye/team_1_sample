@@ -97,8 +97,14 @@ class VirtualsACP:
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
                 
+                context = data["context"]
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None 
                 
-        job = ACPJob(
+                job = ACPJob(
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
@@ -106,7 +112,8 @@ class VirtualsACP:
                     evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
-                    price=data["price"]
+                    price=data["price"],
+                    context=context
                 )
         print(f"Received new task: {job}")
         if self.on_new_task:
@@ -120,7 +127,14 @@ class VirtualsACP:
                     next_phase=memo["nextPhase"],
                 ) for memo in data["memos"]]
                 
-        job = ACPJob(
+                context = data["context"]
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None 
+                
+                job = ACPJob(
                     acp_client=self,
                     id=data["id"],
                     provider_address=data["providerAddress"],
@@ -128,7 +142,8 @@ class VirtualsACP:
                     evaluator_address=data["evaluatorAddress"],
                     memos=memos,
                     phase=data["phase"],
-                    price=data["price"]
+                    price=data["price"],
+                    context=context
                 )
         print(f"Received evaluate: {job}")
         self.on_evaluate(job)
@@ -452,6 +467,14 @@ class VirtualsACP:
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                     ))
+                    
+                context = job.get("context")
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None
+                
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
@@ -460,7 +483,8 @@ class VirtualsACP:
                     evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
-                    price=job.get("price")
+                    price=job.get("price"),
+                    context=context
                 ))
             return jobs 
         except Exception as e:
@@ -468,7 +492,7 @@ class VirtualsACP:
         
         
     def get_completed_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
-        url = f"{self.acp_api_url}/jobs/completed?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        url = f"{self.acp_api_url}/jobs/completed?pagination[page]={page}&pagination[pageSize]={pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }
@@ -488,6 +512,14 @@ class VirtualsACP:
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
+    
+                context = job.get("context")
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None
+                        
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
@@ -496,7 +528,8 @@ class VirtualsACP:
                     evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
-                    price=job.get("price")
+                    price=job.get("price"),
+                    context=context
                 ))
             return jobs
         except Exception as e:
@@ -523,6 +556,14 @@ class VirtualsACP:
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                     ))
+                    
+                context = job.get("context")
+                if isinstance(context, str):
+                    try:
+                        context = json.loads(context)
+                    except json.JSONDecodeError:
+                        context = None
+                        
                 jobs.append(ACPJob(
                     acp_client=self,
                     id=job.get("id"),
@@ -531,7 +572,8 @@ class VirtualsACP:
                     evaluator_address=job.get("evaluatorAddress"),
                     memos=memos,
                     phase=job.get("phase"),
-                    price=job.get("price")
+                    price=job.get("price"),
+                    context=context
                 ))
             return jobs
         except Exception as e:
@@ -559,6 +601,14 @@ class VirtualsACP:
                     content=memo.get("content"),
                     next_phase=ACPJobPhase(int(memo.get("nextPhase")))
                 ))
+
+            context = data.get("data", {}).get("context")
+            if isinstance(context, str):
+                try:
+                    context = json.loads(context)
+                except json.JSONDecodeError:
+                    context = None
+                    
             return ACPJob(
                 acp_client=self,
                 id=data.get("data", {}).get("id"),
@@ -567,7 +617,8 @@ class VirtualsACP:
                 evaluator_address=data.get("data", {}).get("evaluatorAddress"),
                 memos=memos,
                 phase=data.get("data", {}).get("phase"),
-                price=data.get("data", {}).get("price")
+                price=data.get("data", {}).get("price"),
+                context=context
             )
         except Exception as e:
             raise ACPApiError(f"Failed to get job by onchain ID: {e}")
@@ -615,6 +666,7 @@ class VirtualsACP:
                     acp_client=self,
                     provider_address=agent_data["walletAddress"], 
                     type=off["name"],
+                    agent_twitter_handle=agent_data.get("twitterHandle"),
                     price=off["price"],
                     requirementSchema=off.get("requirementSchema", None)
                 )

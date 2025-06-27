@@ -1,4 +1,4 @@
-import time
+import threading
 import json
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
@@ -29,24 +29,24 @@ def seller():
                     }
                     job.deliver(json.dumps(delivery_data))
                     break
-                
+
     if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
         raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
     if env.SELLER_ENTITY_ID is None:
         raise ValueError("SELLER_ENTITY_ID is not set")
 
     # Initialize the ACP client
-    acp_client = VirtualsACP(
+    VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.SELLER_AGENT_WALLET_ADDRESS,
         on_new_task=on_new_task,
         entity_id=env.SELLER_ENTITY_ID
     )
-    
+
+    print("Waiting for new task...")
     # Keep the script running to listen for new tasks
-    while True:
-        print("Waiting for new task...")
-        time.sleep(30)
+    threading.Event().wait()
+
 
 if __name__ == "__main__":
     seller()

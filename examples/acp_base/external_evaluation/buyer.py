@@ -1,5 +1,5 @@
+import threading
 from datetime import datetime, timedelta
-import time
 
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
@@ -9,7 +9,7 @@ from virtuals_acp.env import EnvSettings
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-def test_buyer():
+def buyer():
     env = EnvSettings()
 
     def on_new_task(job: ACPJob):
@@ -68,10 +68,10 @@ def test_buyer():
     )
     
     print(f"Job {job_id} initiated")
-    
-    while True:
-        print("Listening for next steps...")
-        time.sleep(30)
+    print("Listening for next steps...")
+    # Keep the script running to listen for next steps
+    threading.Event().wait()
+
 
 if __name__ == "__main__":
-    test_buyer()
+    buyer()

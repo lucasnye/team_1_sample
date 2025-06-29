@@ -196,7 +196,7 @@ class VirtualsACP:
 
     def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[List[ACPAgentSort]] = None, rerank: Optional[bool] = True, top_k: Optional[int] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
-        
+
         if sortBy and len(sortBy) > 0:
             url += f"&sort={','.join([s.value for s in sortBy])}"
             
@@ -212,13 +212,15 @@ class VirtualsACP:
         if cluster:
             url += f"&filters[cluster]={cluster}"
         
-        if self.config.chain_env == "base-sepolia":
-            url += f"&filters[hasGraduated]=false"
-        else:
-            url += f"&filters[hasGraduated]=true"
-            
+        # if self.config.chain_env == "base-sepolia":
+        #     url += f"&filters[hasGraduated]=false"
+        # else:
+        #     url += f"&filters[hasGraduated]=true"
+
         try:
             response = requests.get(url)
+            print("url: ", url)
+
             response.raise_for_status()
             data = response.json()
             

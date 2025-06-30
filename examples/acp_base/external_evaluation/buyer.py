@@ -43,7 +43,7 @@ def buyer():
     relevant_agents = acp.browse_agents(
         keyword="<your_filter_agent_keyword>",
         cluster="<your_cluster_name>",
-        sortBy=[
+        sort_by=[
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
             ACPAgentSort.IS_ONLINE
         ],

@@ -217,8 +217,8 @@ class VirtualsACP:
         else:
             url += f"&filters[hasGraduated]=true"
 
-        if graduated:
-            url += f"&filters[hasGraduated]=true"
+        if not graduated:
+            url += f"&filters[hasGraduated]=false"
             
         try:
             response = requests.get(url)

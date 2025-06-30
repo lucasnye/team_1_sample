@@ -194,7 +194,7 @@ class VirtualsACP:
         return self.signer_account.address
     
 
-    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[List[ACPAgentSort]] = None, rerank: Optional[bool] = True, top_k: Optional[int] = None) -> List[IACPAgent]:
+    def browse_agents(self, keyword: str, cluster: Optional[str] = None, sortBy: Optional[List[ACPAgentSort]] = None, rerank: Optional[bool] = True, top_k: Optional[int] = None, graduated: Optional[bool] = None) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
         
         if sortBy and len(sortBy) > 0:
@@ -215,6 +215,9 @@ class VirtualsACP:
         if self.config.chain_env == "base-sepolia":
             url += f"&filters[hasGraduated]=false"
         else:
+            url += f"&filters[hasGraduated]=true"
+
+        if graduated is True:
             url += f"&filters[hasGraduated]=true"
             
         try:

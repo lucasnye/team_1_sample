@@ -170,6 +170,7 @@ class VirtualsACP:
             self.sio.connect(
                 self.acp_api_url,
                 auth=auth_data,
+                transports=['websocket'],
             )
 
             def signal_handler(sig, frame):

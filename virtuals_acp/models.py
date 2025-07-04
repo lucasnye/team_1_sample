@@ -22,6 +22,7 @@ class ACPJobPhase(Enum):
     EVALUATION = 3
     COMPLETED = 4
     REJECTED = 5
+    EXPIRED = 6
     
 class ACPAgentSort(Enum):
     SUCCESSFUL_JOB_COUNT = "successfulJobCount"

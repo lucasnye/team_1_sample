@@ -59,7 +59,8 @@ def buyer():
             ACPAgentSort.IS_ONLINE
         ],
         rerank=True,
-        top_k=5
+        top_k=5,
+        graduated=True # False for sandbox agents; True for graduated agents
     )
     print(f"Relevant agents: {relevant_agents}")
 

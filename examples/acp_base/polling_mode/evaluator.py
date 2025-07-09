@@ -10,8 +10,6 @@ load_dotenv(override=True)
 
 # --- Configuration for the job polling interval ---
 POLL_INTERVAL_SECONDS = 20
-
-
 # --------------------------------------------------
 
 def evaluator():
@@ -24,8 +22,6 @@ def evaluator():
     )
     print(f"Evaluator ACP Initialized. Agent: {acp.agent_address}")
 
-    evaluated_deliverables = set()  # Store (job_id, deliverable_memo_id) to avoid re-evaluation
-
     while True:
         print(f"\nEvaluator: Polling for jobs assigned to {acp.agent_address} requiring evaluation...")
         active_jobs_list: List[ACPJob] = acp.get_active_jobs()
@@ -35,8 +31,8 @@ def evaluator():
             time.sleep(POLL_INTERVAL_SECONDS)
             continue
 
-        for job_summary in active_jobs_list:
-            onchain_job_id = job_summary.id
+        for job in active_jobs_list:
+            onchain_job_id = job.id
 
             try:
                 job = acp.get_job_by_onchain_id(onchain_job_id)
@@ -49,40 +45,17 @@ def evaluator():
                 if current_phase == ACPJobPhase.EVALUATION:
                     print(f"Evaluator: Found Job {onchain_job_id} in EVALUATION phase.")
 
-                    # Find the seller's deliverable memo. Its next_phase should be COMPLETED.
-                    seller_deliverable_memo_to_sign = None
-                    for memo in reversed(job.memos):  # Check latest first
-                        if ACPJobPhase(memo.next_phase) == ACPJobPhase.COMPLETED:
-                            seller_deliverable_memo_to_sign = memo
-                            break
+                    # Simple evaluation logic: always accept
+                    accept_the_delivery = True
+                    evaluation_reason = "Deliverable looks great, approved!"
 
-                    if seller_deliverable_memo_to_sign:
-                        deliverable_key = (onchain_job_id, seller_deliverable_memo_to_sign.id)
-                        if deliverable_key in evaluated_deliverables:
-                            print(
-                                f"Deliverable memo {seller_deliverable_memo_to_sign.id} for job {onchain_job_id} already processed.")
-                            continue
-
-                        print(
-                            f"  Job {onchain_job_id}: Found deliverable memo {seller_deliverable_memo_to_sign.id} to evaluate.")
-                        print(f"  Deliverable Content: {seller_deliverable_memo_to_sign.content}")
-
-                        # Simple evaluation logic: always accept
-                        accept_the_delivery = True
-                        evaluation_reason = "Deliverable looks great, approved!"
-
-                        print(f"  Job {onchain_job_id}: Evaluating... Accepting: {accept_the_delivery}")
-                        acp.evaluate_job_delivery(
-                            memo_id_of_deliverable=seller_deliverable_memo_to_sign.id,
-                            accept=accept_the_delivery,
-                            reason=evaluation_reason
-                        )
-                        print(
-                            f"  Job {onchain_job_id}: Evaluation submitted for memo {seller_deliverable_memo_to_sign.id}.")
-                        evaluated_deliverables.add(deliverable_key)
-                    else:
-                        print(
-                            f"  Job {onchain_job_id} in EVALUATION, but no deliverable memo (next_phase=COMPLETED) found yet.")
+                    print(f"  Job {onchain_job_id}: Evaluating... Accepting: {accept_the_delivery}")
+                    job.evaluate(
+                        accept=accept_the_delivery,
+                        reason=evaluation_reason,
+                    )
+                    print(
+                        f"  Job {onchain_job_id}: Evaluation submitted.")
                 elif current_phase in [ACPJobPhase.REQUEST, ACPJobPhase.NEGOTIATION]:
                     print(
                         f"Evaluator: Job {onchain_job_id} is in {current_phase.name} phase. Waiting for job to be delivered.")

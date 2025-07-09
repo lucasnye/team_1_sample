@@ -11,8 +11,6 @@ load_dotenv(override=True)
 
 # --- Configuration for the job polling interval ---
 POLL_INTERVAL_SECONDS = 20
-
-
 # --------------------------------------------------
 
 def seller():
@@ -55,51 +53,26 @@ def seller():
 
                 # 1. Respond to Job Request (if not already responded)
                 if current_phase == ACPJobPhase.REQUEST and not job_stages.get("responded_to_request"):
-                    # Buyer's initial memo will have next_phase = NEGOTIATION
-                    buyers_initial_memo_to_sign = None
-                    for memo in reversed(job_details.memos):
-                        if ACPJobPhase(memo.next_phase) == ACPJobPhase.NEGOTIATION:
-                            buyers_initial_memo_to_sign = memo
-                            break
-
-                    if buyers_initial_memo_to_sign:
-                        print(
-                            f"Seller: Job {onchain_job_id} is in REQUEST. Responding to buyer's memo {buyers_initial_memo_to_sign.id}...")
-                        acp.respond_to_job_memo(
-                            job_id=onchain_job_id,
-                            memo_id=buyers_initial_memo_to_sign.id,  # ID of the memo created by Buyer
-                            accept=True,
-                            reason="Seller accepts the job offer."
-                        )
-                        print(f"Seller: Accepted job {onchain_job_id}. Job phase should move to NEGOTIATION.")
-                        job_stages["responded_to_request"] = True
-                    else:
-                        print(f"Seller: Job {onchain_job_id} in REQUEST, but could not find buyer's initial memo.")
-
+                    print(
+                        f"Seller: Job {onchain_job_id} is in REQUEST. Responding to buyer's request...")
+                    job.respond(
+                        accept=True,
+                        reason=f"Seller accepts the job offer.",
+                    )
+                    print(f"Seller: Accepted job {onchain_job_id}. Job phase should move to NEGOTIATION.")
+                    job_stages["responded_to_request"] = True
                 # 2. Submit Deliverable (if job is paid and not yet delivered)
                 elif current_phase == ACPJobPhase.TRANSACTION and not job_stages.get("delivered_work"):
                     # Buyer has paid, job is in TRANSACTION. Seller needs to deliver.
-                    # The latest memo from buyer would have next_phase = EVALUATION
-                    buyers_payment_confirmation_memo = None
-                    for memo in reversed(job_details.memos):
-                        if ACPJobPhase(memo.next_phase) == ACPJobPhase.EVALUATION:
-                            buyers_payment_confirmation_memo = memo
-                            break
-
-                    if buyers_payment_confirmation_memo:
-                        print(f"Seller: Job {onchain_job_id} is PAID (TRANSACTION phase). Submitting deliverable...")
-                        acp.submit_job_deliverable(
-                            job_id=onchain_job_id,
-                            deliverable_content=json.dumps({
-                                "type": "url",
-                                "value": "https://example.com"
-                            })
-                        )
-                        print(f"Seller: Deliverable submitted for job {onchain_job_id}. Job should move to EVALUATION.")
-                        job_stages["delivered_work"] = True
-                    else:
-                        print(
-                            f"Seller: Job {onchain_job_id} in TRANSACTION, but couldn't find buyer's payment memo to confirm.")
+                    print(f"Seller: Job {onchain_job_id} is PAID (TRANSACTION phase). Submitting deliverable...")
+                    job.deliver(
+                        deliverable=json.dumps({
+                            "type": "url",
+                            "value": "https://example.com"
+                        })
+                    )
+                    print(f"Seller: Deliverable submitted for job {onchain_job_id}. Job should move to EVALUATION.")
+                    job_stages["delivered_work"] = True
 
                 elif current_phase in [ACPJobPhase.EVALUATION, ACPJobPhase.COMPLETED, ACPJobPhase.REJECTED]:
                     print(f"Seller: Job {onchain_job_id} is in {current_phase.name}. No further action for seller.")

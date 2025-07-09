@@ -10,8 +10,6 @@ load_dotenv(override=True)
 
 # --- Configuration for the job polling interval ---
 POLL_INTERVAL_SECONDS = 20
-
-
 # --------------------------------------------------
 
 

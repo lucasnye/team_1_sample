@@ -15,6 +15,7 @@ from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
+from importlib.metadata import version
 from virtuals_acp.configs import ACPContractConfig, DEFAULT_CONFIG
 from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
@@ -159,6 +160,7 @@ class VirtualsACP:
 
     def _connect_socket(self) -> None:
         """Connect to the socket server with appropriate authentication."""
+        headers_data = { 'sdkVersion': version("virtuals_acp"), 'language': 'python' }
         auth_data = { 'walletAddress': self.agent_address }
 
         if self.on_evaluate != self._default_on_evaluate:
@@ -168,6 +170,7 @@ class VirtualsACP:
             self.sio.connect(
                 self.acp_api_url,
                 auth=auth_data,
+                headers=headers_data,
                 transports=['websocket'],
             )
 

@@ -117,7 +117,7 @@ def buyer(use_thread_lock: bool = True):
         graduated=True  # False for sandbox agents; True for graduated agents
     )
     print(f"Relevant agents: {relevant_agents}")
-    
+
     # Pick one of the agents based on your criteria (in this example we just pick the first one)
     chosen_agent = relevant_agents[0]
 

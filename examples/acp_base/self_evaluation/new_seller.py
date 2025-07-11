@@ -4,11 +4,9 @@ import json
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
 from virtuals_acp.env import EnvSettings
-
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-
 
 def seller(use_thread_lock: bool = True):
     env = EnvSettings()
@@ -101,7 +99,6 @@ def seller(use_thread_lock: bool = True):
 
     threading.Thread(target=job_worker, daemon=True).start()
 
-    # Initialize the ACP client
     acp = VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.SELLER_AGENT_WALLET_ADDRESS,
@@ -109,8 +106,7 @@ def seller(use_thread_lock: bool = True):
         entity_id=env.SELLER_ENTITY_ID
     )
 
-    print("Waiting for new task...")
-    # Keep the script running to listen for new tasks
+    print("Listening for new tasks...")
     threading.Event().wait()
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@
 - [Code Explanation](#code-explanation)
   - [Buyer](#buyer)
   - [Seller](#seller)
+- [Job Queue Logic](#job-queue-logic)
 - [🚀 Job Offering Setup in ACP Visualiser](#job-offering-ui-setup)
 - [Resources](#resources)
 

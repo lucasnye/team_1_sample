@@ -4,8 +4,9 @@ import json
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
 from virtuals_acp.env import EnvSettings
-
 from dotenv import load_dotenv
+from collections import deque
+
 load_dotenv(override=True)
 
 def seller(use_thread_lock: bool = True):
@@ -18,7 +19,7 @@ def seller(use_thread_lock: bool = True):
     if env.SELLER_ENTITY_ID is None:
         raise ValueError("SELLER_ENTITY_ID is not set")
 
-    job_queue = []
+    job_queue = deque()
     job_queue_lock = threading.Lock()
     job_event = threading.Event()
 
@@ -36,14 +37,14 @@ def seller(use_thread_lock: bool = True):
             print(f"[safe_pop_job] Acquiring lock to pop job")
             with job_queue_lock:
                 if job_queue:
-                    job = job_queue.pop(0)
+                    job = job_queue.popleft()
                     print(f"[safe_pop_job] Lock acquired, popped job {job.id}")
                     return job
                 else:
                     print("[safe_pop_job] Queue is empty after acquiring lock")
         else:
             if job_queue:
-                job = job_queue.pop(0)
+                job = job_queue.popleft()
                 print(f"[safe_pop_job] Popped job {job.id} without lock")
                 return job
             else:
@@ -57,12 +58,8 @@ def seller(use_thread_lock: bool = True):
                 job = safe_pop_job()
                 if not job:
                     break
-                try:
-                    process_job(job)
-                    time.sleep(2)
-                except Exception as e:
-                    print(f"\u274c Error processing job: {e}")
-
+                # Process each job in its own thread to avoid blocking
+                threading.Thread(target=handle_job_with_delay, args=(job,), daemon=True).start()
             if use_thread_lock:
                 with job_queue_lock:
                     if not job_queue:
@@ -70,6 +67,13 @@ def seller(use_thread_lock: bool = True):
             else:
                 if not job_queue:
                     job_event.clear()
+
+    def handle_job_with_delay(job):
+        try:
+            process_job(job)
+            time.sleep(2)
+        except Exception as e:
+            print(f"\u274c Error processing job: {e}")
 
     def on_new_task(job: ACPJob):
         print(f"[on_new_task] Received job {job.id} (phase: {job.phase})")
@@ -85,7 +89,7 @@ def seller(use_thread_lock: bool = True):
         elif job.phase == ACPJobPhase.TRANSACTION:
             for memo in job.memos:
                 if memo.next_phase == ACPJobPhase.EVALUATION:
-                    print("Delivering job", job)
+                    print(f"Delivering job {job.id}")
                     delivery_data = {
                         "type": "url",
                         "value": "https://example.com"
@@ -108,7 +112,6 @@ def seller(use_thread_lock: bool = True):
     )
 
     print("Waiting for new task...")
-    # Keep the script running to listen for new tasks
     threading.Event().wait()
 
 if __name__ == "__main__":

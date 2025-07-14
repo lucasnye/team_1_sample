@@ -99,8 +99,11 @@ To efficiently handle multiple incoming jobs and avoid race conditions, the exam
 **How it works:**
 
 ```python
-job_queue = []
+from collections import deque
+
+job_queue = deque()
 job_queue_lock = threading.Lock()
+initiate_job_lock = threading.Lock()
 job_event = threading.Event()
 
 def safe_append_job(job):
@@ -110,7 +113,7 @@ def safe_append_job(job):
 def safe_pop_job():
     with job_queue_lock:
         if job_queue:
-            return job_queue.pop(0)
+            return job_queue.popleft()
         return None
 
 def job_worker():
@@ -203,5 +206,5 @@ Set up your job offering by following steps.
 
 ## Resources
 - [Main README](../../../README.md)
-- [Service Registry](https://acp-staging.virtuals.io/)
+- [Service Registry](https://app.virtuals.io/acp)
 - [ACP SDK Documentation](https://github.com/virtualsprotocol/acp-python) 

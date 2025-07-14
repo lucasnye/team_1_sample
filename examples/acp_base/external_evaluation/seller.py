@@ -6,6 +6,7 @@ from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
+from collections import deque
 
 load_dotenv(override=True)
 
@@ -20,7 +21,7 @@ def seller(use_thread_lock: bool = True):
     if env.SELLER_ENTITY_ID is None:
         raise ValueError("SELLER_ENTITY_ID is not set")
 
-    job_queue = []
+    job_queue = deque()
     job_queue_lock = threading.Lock()
     job_event = threading.Event()
 
@@ -38,14 +39,14 @@ def seller(use_thread_lock: bool = True):
             print(f"[safe_pop_job] Acquiring lock to pop job")
             with job_queue_lock:
                 if job_queue:
-                    job = job_queue.pop(0)
+                    job = job_queue.popleft()
                     print(f"[safe_pop_job] Lock acquired, popped job {job.id}")
                     return job
                 else:
                     print("[safe_pop_job] Queue is empty after acquiring lock")
         else:
             if job_queue:
-                job = job_queue.pop(0)
+                job = job_queue.popleft()
                 print(f"[safe_pop_job] Popped job {job.id} without lock")
                 return job
             else:

@@ -81,8 +81,11 @@ To efficiently handle multiple incoming jobs and avoid race conditions, the exam
 **How it works:**
 
 ```python
-job_queue = []
+from collections import deque
+
+job_queue = deque()
 job_queue_lock = threading.Lock()
+initiate_job_lock = threading.Lock()
 job_event = threading.Event()
 
 def safe_append_job(job):
@@ -92,7 +95,7 @@ def safe_append_job(job):
 def safe_pop_job():
     with job_queue_lock:
         if job_queue:
-            return job_queue.pop(0)
+            return job_queue.popleft()
         return None
 
 def job_worker():
@@ -124,7 +127,7 @@ def on_new_task(job):
 ## How to Run
 
 1. **Set up your environment variables** (see the main README for details).
-2. **Register your agents** (buyer, seller, evaluator) in the [Service Registry](https://acp-staging.virtuals.io/).
+2. **Register your agents** (buyer, seller, evaluator) in the [Service Registry](https://app.virtuals.io/acp).
 3. **Run each script in a separate terminal:**
    - `python buyer.py`
    - `python seller.py`
@@ -226,5 +229,5 @@ Set up your job offering in the ACP Visualiser by following these steps.
 
 ## Resources
 - [ACP Python SDK Main README](../../README.md)
-- [Service Registry](https://acp-staging.virtuals.io/)
+- [Service Registry](https://app.virtuals.io/acp)
 - [ACP SDK Documentation](https://github.com/virtualsprotocol/acp-python) 

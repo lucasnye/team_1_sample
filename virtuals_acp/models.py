@@ -29,8 +29,16 @@ class ACPAgentSort(Enum):
     SUCCESS_RATE = "successRate" 
     UNIQUE_BUYER_COUNT = "uniqueBuyerCount"
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
-    IS_ONLINE = "isOnline"
 
+class ACPGraduatedStatus(Enum):
+    GRADUATED = "true"
+    NOT_GRADUATED = "false"
+    ALL = "all"
+    
+class ACPOnlineStatus(Enum):
+    ONLINE = "true"
+    OFFLINE = "false"
+    ALL = "all"
 
 @dataclass
 class IACPAgent:

@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple, Union, Dict, Any, Callable
+from typing import List, Literal, Optional, Tuple, Union, Dict, Any, Callable
 
 import requests
 import socketio
@@ -21,7 +21,7 @@ from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, MemoType, IACPAgent
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduatedStatus, ACPOnlineStatus, MemoType, IACPAgent
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -204,13 +204,12 @@ class VirtualsACP:
             sort_by: Optional[List[ACPAgentSort]] = None,
             rerank: Optional[bool] = True,
             top_k: Optional[int] = None,
-            graduated: Optional[bool] = None
+            graduated_status: Optional[ACPGraduatedStatus] = None,
+            online_status: Optional[ACPOnlineStatus] = None
     ) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents?search={keyword}"
-
         rerank = True if rerank is None else rerank
         top_k = 5 if top_k is None else top_k
-        graduated = True if graduated is None else graduated
 
         if sort_by:
             url += f"&sort={','.join([s.value for s in sort_by])}"
@@ -227,8 +226,11 @@ class VirtualsACP:
         if cluster:
             url += f"&filters[cluster]={cluster}"
 
-        if not graduated:
-            url += f"&filters[hasGraduated]=false"
+        if graduated_status is not None:
+            url += f"&filters[hasGraduated]={graduated_status}"
+                
+        if online_status is not None:
+            url += f"&onlineStatus={online_status}"
 
         try:
             response = requests.get(url)

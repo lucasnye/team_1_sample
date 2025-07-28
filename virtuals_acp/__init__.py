@@ -4,7 +4,9 @@ from .models import (
     IACPAgent,
     ACPJobPhase,
     MemoType,
-    ACPAgentSort
+    ACPAgentSort,
+    ACPGraduatedStatus,
+    ACPOnlineStatus
 )
 from .configs import (
     ACPContractConfig,
@@ -29,7 +31,7 @@ __all__ = [
     "IACPAgent",
     "ACPJobPhase",
     "MemoType",
-    "IACPOffering",
+    "ACPJobOffering",
     "ACPContractConfig",
     "BASE_SEPOLIA_CONFIG",
     "BASE_MAINNET_CONFIG",
@@ -43,7 +45,9 @@ __all__ = [
     "ACPJob",
     "ACPMemo",
     "ACPJobOffering",
-    "ACPAgentSort"
+    "ACPAgentSort",
+    "ACPGraduatedStatus",
+    "ACPOnlineStatus"
 ]
 
 __version__ = "0.1.0"

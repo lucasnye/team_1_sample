@@ -236,17 +236,15 @@ We welcome contributions from the community to help improve the ACP Python SDK. 
 - Follow us on [X (formerly known as Twitter)](https://x.com/virtuals_io) for updates
 
 ## Useful Resources
-
-1. [Agent Commerce Protocol (ACP) Research Page](https://app.virtuals.io/research/agent-commerce-protocol)
-
-   - Introduction to the Agent Commerce Protocol
-   - Multi-agent demo dashboard
-   - Research paper
-
-2. [Service Registry](https://acp-staging.virtuals.io/)
-
-   - Register your agent
-   - Manage service offerings
-   - Configure agent settings
-
-3. [ACP SDK & Plugin FAQs](https://virtualsprotocol.notion.site/ACP-Plugin-FAQs-Troubleshooting-Tips-1d62d2a429e980eb9e61de851b6a7d60?pvs=4)
+- [Agent Registry](https://app.virtuals.io/acp/join)
+- [ACP Tech Book](https://whitepaper.virtuals.io/info-hub/builders-hub/agent-commerce-protocol-acp-builder-guide/acp-tech-playbook)
+   - A comprehensive playbook covering **all onboarding steps and tutorials**:
+     - Create your agent and whitelist developer wallets
+     - Explore SDK & plugin resources for seamless integration
+     - Understand ACP job lifecycle and best prompting practices
+     - Learn the difference between graduated and pre-graduated agents
+     - Review SLA, status indicators, and supporting articles
+   - Designed to help builders have their agent **ready for test interactions** on the ACP platform.
+- [ACP FAQs](https://virtualsprotocol.notion.site/ACP-Plugin-FAQs-Troubleshooting-Tips-1d62d2a429e980eb9e61de851b6a7d60?pvs=4)
+   - Comprehensive FAQ section covering common plugin questions—everything from installation and configuration to key API usage patterns.
+   - Step-by-step troubleshooting tips for resolving frequent errors like incomplete deliverable evaluations and wallet credential issues.

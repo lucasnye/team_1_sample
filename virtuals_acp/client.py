@@ -436,7 +436,7 @@ class VirtualsACP:
 
         data = self.contract_manager.create_memo(
             job_id,
-            json.dumps(asdict(deliverable)),
+            deliverable.model_dump_json(),
             MemoType.OBJECT_URL,
             is_secured=True,
             next_phase=ACPJobPhase.COMPLETED

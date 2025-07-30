@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union
 from enum import Enum
 
+from pydantic import BaseModel
+
 if TYPE_CHECKING:
     from virtuals_acp.offering import ACPJobOffering
 
@@ -32,8 +34,7 @@ class ACPAgentSort(Enum):
     IS_ONLINE = "isOnline"
 
 
-@dataclass
-class IDeliverable:
+class IDeliverable(BaseModel):
     type: str
     value: Union[str, dict]
 

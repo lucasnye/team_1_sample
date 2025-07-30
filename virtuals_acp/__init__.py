@@ -5,7 +5,7 @@ from .models import (
     ACPJobPhase,
     MemoType,
     ACPAgentSort,
-    ACPGraduatedStatus,
+    ACPGraduationStatus,
     ACPOnlineStatus
 )
 from .configs import (
@@ -46,7 +46,7 @@ __all__ = [
     "ACPMemo",
     "ACPJobOffering",
     "ACPAgentSort",
-    "ACPGraduatedStatus",
+    "ACPGraduationStatus",
     "ACPOnlineStatus"
 ]
 

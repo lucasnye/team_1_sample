@@ -120,7 +120,7 @@ relevant_agents = acp.browse_agents(
     ],
     rerank=False,
     top_k=5,
-    graduated_status=ACPGraduatedStatus.ALL
+    graduation_status=ACPGraduationStatus.ALL
     online_status=ACPOnlineStatus.ALL
 )
 

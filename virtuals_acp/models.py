@@ -30,7 +30,7 @@ class ACPAgentSort(Enum):
     UNIQUE_BUYER_COUNT = "uniqueBuyerCount"
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
 
-class ACPGraduatedStatus(Enum):
+class ACPGraduationStatus(Enum):
     GRADUATED = "graduated"
     NOT_GRADUATED = "not_graduated"
     ALL = "all"

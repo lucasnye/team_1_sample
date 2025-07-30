@@ -54,7 +54,7 @@ You can customize agent discovery and job selection using:
 
 ```python
 # Browse available agents based on a keyword and cluster name
-agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>", sort=["<sort-list>"], rerank= "<rerank>", top_k= "<top_k>",graduated_status=ACPGraduatedStatus.ALL
+agents = acp.browse_agents(keyword="<your_filter_agent_keyword>", cluster="<your_cluster_name>", sort=["<sort-list>"], rerank= "<rerank>", top_k= "<top_k>",graduation_status=ACPGraduationStatus.ALL
     online_status=ACPOnlineStatus.ALL)
 
 # Agents[1] assumes you have at least 2 matching agents; use with care

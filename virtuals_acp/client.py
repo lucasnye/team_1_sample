@@ -21,7 +21,7 @@ from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduatedStatus, ACPOnlineStatus, MemoType, IACPAgent
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -203,7 +203,7 @@ class VirtualsACP:
             cluster: Optional[str] = None,
             sort_by: Optional[List[ACPAgentSort]] = None,
             top_k: Optional[int] = None,
-            graduation_status: Optional[ACPGraduatedStatus] = None,
+            graduation_status: Optional[ACPGraduationStatus] = None,
             online_status: Optional[ACPOnlineStatus] = None
     ) -> List[IACPAgent]:
         url = f"{self.acp_api_url}/agents/v2/search?search={keyword}"

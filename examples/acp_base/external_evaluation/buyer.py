@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduatedStatus, ACPOnlineStatus
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
@@ -113,9 +113,8 @@ def buyer(use_thread_lock: bool = True):
         sort_by=[
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
         ],
-        rerank=True,
         top_k=5,
-        graduated_status=ACPGraduatedStatus.ALL, 
+        graduation_status=ACPGraduationStatus.ALL, 
         online_status=ACPOnlineStatus.ALL
     )
     print(f"Relevant agents: {relevant_agents}")

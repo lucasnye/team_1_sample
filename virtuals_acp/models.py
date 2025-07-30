@@ -133,9 +133,8 @@ class UpdatePositionPayload(BaseModel):
 
 
 class ClosePositionPayload(BaseModel):
-    symbol: str
+    position_id: int
     amount: float
-    contract_address: Optional[str] = None
 
 
 class PositionFulfilledPayload(BaseModel):
@@ -161,5 +160,4 @@ class CloseJobAndWithdrawPayload(BaseModel):
 
 
 class RequestClosePositionPayload(BaseModel):
-    symbol: str
-    contract_address: Optional[str] = None
+    position_id: int

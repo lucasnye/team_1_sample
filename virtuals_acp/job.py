@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPJobPhase, IACPAgent
+from virtuals_acp.models import ACPJobPhase, IACPAgent, IDeliverable
 
 if TYPE_CHECKING:
     from virtuals_acp.client import VirtualsACP
@@ -93,7 +93,7 @@ class ACPJob(BaseModel):
             
         return self.acp_client.respond_to_job_memo(self.id, memo.id, accept, reason)
 
-    def deliver(self, deliverable: str):
+    def deliver(self, deliverable: IDeliverable):
         memo = next(
             (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.EVALUATION),
             None

@@ -1,7 +1,7 @@
 # virtuals_acp/models.py
 
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, TYPE_CHECKING, Dict
+from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union
 from enum import Enum
 
 if TYPE_CHECKING:
@@ -30,6 +30,12 @@ class ACPAgentSort(Enum):
     UNIQUE_BUYER_COUNT = "uniqueBuyerCount"
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
     IS_ONLINE = "isOnline"
+
+
+@dataclass
+class IDeliverable:
+    type: str
+    value: Union[str, dict]
 
 
 @dataclass

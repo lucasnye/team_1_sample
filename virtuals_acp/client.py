@@ -4,6 +4,7 @@ import signal
 import sys
 import threading
 import time
+from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple, Union, Dict, Any, Callable
 
@@ -21,7 +22,7 @@ from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, MemoType, IACPAgent
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, MemoType, IACPAgent, IDeliverable
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -430,12 +431,12 @@ class VirtualsACP:
     def submit_job_deliverable(
             self,
             job_id: int,
-            deliverable_content: str
+            deliverable: IDeliverable
     ) -> str:
 
         data = self.contract_manager.create_memo(
             job_id,
-            deliverable_content,
+            json.dumps(asdict(deliverable)),
             MemoType.OBJECT_URL,
             is_secured=True,
             next_phase=ACPJobPhase.COMPLETED

@@ -2,7 +2,7 @@ import threading
 import time
 import json
 
-from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
+from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase, IDeliverable
 from virtuals_acp.env import EnvSettings
 
 from dotenv import load_dotenv
@@ -89,11 +89,11 @@ def seller(use_thread_lock: bool = True):
             for memo in job.memos:
                 if memo.next_phase == ACPJobPhase.EVALUATION:
                     print("Delivering job", job)
-                    delivery_data = {
-                        "type": "url",
-                        "value": "https://example.com"
-                    }
-                    job.deliver(json.dumps(delivery_data))
+                    deliverable = IDeliverable(
+                        type="url",
+                        value="https://example.com"
+                    )
+                    job.deliver(deliverable)
                     break
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)

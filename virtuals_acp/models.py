@@ -31,13 +31,13 @@ class ACPAgentSort(Enum):
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
 
 class ACPGraduatedStatus(Enum):
-    GRADUATED = "true"
-    NOT_GRADUATED = "false"
+    GRADUATED = "graduated"
+    NOT_GRADUATED = "not_graduated"
     ALL = "all"
     
 class ACPOnlineStatus(Enum):
-    ONLINE = "true"
-    OFFLINE = "false"
+    ONLINE = "online"
+    OFFLINE = "offline"
     ALL = "all"
 
 @dataclass

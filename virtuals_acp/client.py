@@ -202,32 +202,27 @@ class VirtualsACP:
             keyword: str,
             cluster: Optional[str] = None,
             sort_by: Optional[List[ACPAgentSort]] = None,
-            rerank: Optional[bool] = True,
             top_k: Optional[int] = None,
-            graduated_status: Optional[ACPGraduatedStatus] = None,
+            graduation_status: Optional[ACPGraduatedStatus] = None,
             online_status: Optional[ACPOnlineStatus] = None
     ) -> List[IACPAgent]:
-        url = f"{self.acp_api_url}/agents?search={keyword}"
-        rerank = True if rerank is None else rerank
+        url = f"{self.acp_api_url}/agents/v2/search?search={keyword}"
         top_k = 5 if top_k is None else top_k
 
         if sort_by:
-            url += f"&sort={','.join([s.value for s in sort_by])}"
+            url += f"&sortBy={','.join([s.value for s in sort_by])}"
 
         if top_k:
             url += f"&top_k={top_k}"
 
-        if rerank:
-            url += f"&rerank=true"
-
         if self.agent_address:
-            url += f"&filters[walletAddress][$notIn]={self.agent_address}"
+            url += f"&walletAddressesToExclude={self.agent_address}"
 
         if cluster:
-            url += f"&filters[cluster]={cluster}"
+            url += f"&cluster={cluster}"
 
-        if graduated_status is not None:
-            url += f"&filters[hasGraduated]={graduated_status}"
+        if graduation_status is not None:
+            url += f"&graduationStatus={graduation_status}"
                 
         if online_status is not None:
             url += f"&onlineStatus={online_status}"

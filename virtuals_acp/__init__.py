@@ -46,7 +46,6 @@ __all__ = [
     "ERC20_ABI",
     "ACPJob",
     "ACPMemo",
-    "ACPJobOffering",
     "ACPAgentSort",
     "ACPGraduationStatus",
     "ACPOnlineStatus"

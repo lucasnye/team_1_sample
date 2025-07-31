@@ -115,7 +115,7 @@ def buyer(use_thread_lock: bool = True):
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
         ],
         top_k=5,
-        graduation_status=ACPGraduationStatus.ALL, 
+        graduation_status=ACPGraduationStatus.ALL,
         online_status=ACPOnlineStatus.ALL
     )
     print(f"Relevant agents: {relevant_agents}")
@@ -134,6 +134,7 @@ def buyer(use_thread_lock: bool = True):
             evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
             expired_at=datetime.now() + timedelta(days=1)
         )
+        print(f"Job {job_id} initiated.")
 
     print("Listening for next steps...")
     threading.Event().wait()

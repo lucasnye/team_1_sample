@@ -114,7 +114,7 @@ def buyer(use_thread_lock: bool = True):
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
         ],
         top_k=5,
-        graduation_status=ACPGraduationStatus.ALL, 
+        graduation_status=ACPGraduationStatus.ALL,
         online_status=ACPOnlineStatus.ALL
     )
     print(f"Relevant agents: {relevant_agents}")

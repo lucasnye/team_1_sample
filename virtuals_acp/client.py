@@ -223,10 +223,10 @@ class VirtualsACP:
             url += f"&cluster={cluster}"
 
         if graduation_status is not None:
-            url += f"&graduationStatus={graduation_status}"
+            url += f"&graduationStatus={graduation_status.value}"
                 
         if online_status is not None:
-            url += f"&onlineStatus={online_status}"
+            url += f"&onlineStatus={online_status.value}"
 
         try:
             response = requests.get(url)

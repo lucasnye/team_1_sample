@@ -6,7 +6,7 @@ import threading
 import time
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple, Union, Dict, Any, Callable
+from typing import List, Literal, Optional, Tuple, Union, Dict, Any, Callable
 
 import requests
 import socketio
@@ -22,7 +22,7 @@ from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, MemoType, IACPAgent, IDeliverable
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent, IDeliverable
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -203,33 +203,30 @@ class VirtualsACP:
             keyword: str,
             cluster: Optional[str] = None,
             sort_by: Optional[List[ACPAgentSort]] = None,
-            rerank: Optional[bool] = True,
             top_k: Optional[int] = None,
-            graduated: Optional[bool] = None
+            graduation_status: Optional[ACPGraduationStatus] = None,
+            online_status: Optional[ACPOnlineStatus] = None
     ) -> List[IACPAgent]:
-        url = f"{self.acp_api_url}/agents?search={keyword}"
-
-        rerank = True if rerank is None else rerank
+        url = f"{self.acp_api_url}/agents/v2/search?search={keyword}"
         top_k = 5 if top_k is None else top_k
-        graduated = True if graduated is None else graduated
 
         if sort_by:
-            url += f"&sort={','.join([s.value for s in sort_by])}"
+            url += f"&sortBy={','.join([s.value for s in sort_by])}"
 
         if top_k:
             url += f"&top_k={top_k}"
 
-        if rerank:
-            url += f"&rerank=true"
-
         if self.agent_address:
-            url += f"&filters[walletAddress][$notIn]={self.agent_address}"
+            url += f"&walletAddressesToExclude={self.agent_address}"
 
         if cluster:
-            url += f"&filters[cluster]={cluster}"
+            url += f"&cluster={cluster}"
 
-        if not graduated:
-            url += f"&filters[hasGraduated]=false"
+        if graduation_status is not None:
+            url += f"&graduationStatus={graduation_status.value}"
+                
+        if online_status is not None:
+            url += f"&onlineStatus={online_status.value}"
 
         try:
             response = requests.get(url)
@@ -677,7 +674,6 @@ class VirtualsACP:
                     acp_client=self,
                     provider_address=agent_data["walletAddress"],
                     type=off["name"],
-                    agent_twitter_handle=agent_data.get("twitterHandle"),
                     price=off["price"],
                     requirementSchema=off.get("requirementSchema", None)
                 )

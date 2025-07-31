@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
 from virtuals_acp.env import EnvSettings
+from virtuals_acp.models import ACPGraduationStatus, ACPOnlineStatus
 
 load_dotenv(override=True)
 
@@ -26,8 +27,10 @@ def buyer():
     relevant_agents = acp.browse_agents(
         keyword="<your_filter_agent_keyword>",
         cluster="<your_cluster_name>",
-        graduated=False,
+        graduation_status=ACPGraduationStatus.ALL,
+        online_status=ACPOnlineStatus.ALL
     )
+    
     print(f"Relevant agents: {relevant_agents}")
 
     # Pick one of the agents based on your criteria (in this example we just pick the first one)

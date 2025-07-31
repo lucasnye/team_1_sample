@@ -31,8 +31,16 @@ class ACPAgentSort(Enum):
     SUCCESS_RATE = "successRate" 
     UNIQUE_BUYER_COUNT = "uniqueBuyerCount"
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
-    IS_ONLINE = "isOnline"
 
+class ACPGraduationStatus(Enum):
+    GRADUATED = "graduated"
+    NOT_GRADUATED = "not_graduated"
+    ALL = "all"
+    
+class ACPOnlineStatus(Enum):
+    ONLINE = "online"
+    OFFLINE = "offline"
+    ALL = "all"
 
 class IDeliverable(BaseModel):
     type: str

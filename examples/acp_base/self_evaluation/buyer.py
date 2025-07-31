@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus
 from virtuals_acp.env import EnvSettings
 from dotenv import load_dotenv
 from collections import deque
@@ -113,11 +113,10 @@ def buyer(use_thread_lock: bool = True):
         cluster="<your_cluster_name>",
         sort_by=[
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
-            ACPAgentSort.IS_ONLINE
         ],
-        rerank=True,
         top_k=5,
-        graduated=True # False for sandbox agents; True for graduated agents
+        graduation_status=ACPGraduationStatus.ALL,
+        online_status=ACPOnlineStatus.ALL
     )
     print(f"Relevant agents: {relevant_agents}")
 
@@ -135,6 +134,7 @@ def buyer(use_thread_lock: bool = True):
             evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
             expired_at=datetime.now() + timedelta(days=1)
         )
+        print(f"Job {job_id} initiated.")
 
     print("Listening for next steps...")
     threading.Event().wait()

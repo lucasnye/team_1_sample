@@ -1,8 +1,10 @@
 # virtuals_acp/models.py
 
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, TYPE_CHECKING, Dict
+from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union
 from enum import Enum
+
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from virtuals_acp.offering import ACPJobOffering
@@ -39,6 +41,11 @@ class ACPOnlineStatus(Enum):
     ONLINE = "online"
     OFFLINE = "offline"
     ALL = "all"
+
+class IDeliverable(BaseModel):
+    type: str
+    value: Union[str, dict]
+
 
 @dataclass
 class IACPAgent:

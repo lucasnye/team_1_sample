@@ -1,6 +1,7 @@
 # virtuals_acp/__init__.py
 
 from .models import (
+    IDeliverable,
     IACPAgent,
     ACPJobPhase,
     MemoType,
@@ -28,6 +29,7 @@ from .abi import ACP_ABI, ERC20_ABI
 
 __all__ = [
     "VirtualsACP",
+    "IDeliverable",
     "IACPAgent",
     "ACPJobPhase",
     "MemoType",

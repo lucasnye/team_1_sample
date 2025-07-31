@@ -2,7 +2,7 @@ import threading
 import time
 import json
 
-from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
+from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase, IDeliverable
 from virtuals_acp.env import EnvSettings
 from dotenv import load_dotenv
 from collections import deque
@@ -90,11 +90,11 @@ def seller(use_thread_lock: bool = True):
             for memo in job.memos:
                 if memo.next_phase == ACPJobPhase.EVALUATION:
                     print(f"Delivering job {job.id}")
-                    delivery_data = {
-                        "type": "url",
-                        "value": "https://example.com"
-                    }
-                    job.deliver(json.dumps(delivery_data))
+                    deliverable = IDeliverable(
+                        type="url",
+                        value="https://example.com"
+                    )
+                    job.deliver(deliverable)
                     break
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
@@ -104,7 +104,7 @@ def seller(use_thread_lock: bool = True):
     threading.Thread(target=job_worker, daemon=True).start()
 
     # Initialize the ACP client
-    acp = VirtualsACP(
+    VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.SELLER_AGENT_WALLET_ADDRESS,
         on_new_task=on_new_task,

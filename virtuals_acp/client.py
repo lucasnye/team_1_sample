@@ -4,6 +4,7 @@ import signal
 import sys
 import threading
 import time
+from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from typing import List, Literal, Optional, Tuple, Union, Dict, Any, Callable
 
@@ -21,7 +22,7 @@ from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
-from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent
+from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent, IDeliverable
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -427,12 +428,12 @@ class VirtualsACP:
     def submit_job_deliverable(
             self,
             job_id: int,
-            deliverable_content: str
+            deliverable: IDeliverable
     ) -> str:
 
         data = self.contract_manager.create_memo(
             job_id,
-            deliverable_content,
+            deliverable.model_dump_json(),
             MemoType.OBJECT_URL,
             is_secured=True,
             next_phase=ACPJobPhase.COMPLETED
@@ -673,7 +674,6 @@ class VirtualsACP:
                     acp_client=self,
                     provider_address=agent_data["walletAddress"],
                     type=off["name"],
-                    agent_twitter_handle=agent_data.get("twitterHandle"),
                     price=off["price"],
                     requirementSchema=off.get("requirementSchema", None)
                 )

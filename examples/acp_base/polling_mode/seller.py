@@ -4,7 +4,7 @@ from typing import List
 
 from dotenv import load_dotenv
 
-from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase
+from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase, IDeliverable
 from virtuals_acp.env import EnvSettings
 
 load_dotenv(override=True)
@@ -65,12 +65,11 @@ def seller():
                 elif current_phase == ACPJobPhase.TRANSACTION and not job_stages.get("delivered_work"):
                     # Buyer has paid, job is in TRANSACTION. Seller needs to deliver.
                     print(f"Seller: Job {onchain_job_id} is PAID (TRANSACTION phase). Submitting deliverable...")
-                    job.deliver(
-                        deliverable=json.dumps({
-                            "type": "url",
-                            "value": "https://example.com"
-                        })
+                    deliverable = IDeliverable(
+                        type="url",
+                        value="https://example.com"
                     )
+                    job.deliver(deliverable)
                     print(f"Seller: Deliverable submitted for job {onchain_job_id}. Job should move to EVALUATION.")
                     job_stages["delivered_work"] = True
 

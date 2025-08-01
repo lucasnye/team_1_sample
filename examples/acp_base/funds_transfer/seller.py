@@ -17,7 +17,14 @@ def seller():
     position_fulfilled_count = 0
     env = EnvSettings()
 
-    def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo]):
+    if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
+        raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
+    if env.SELLER_AGENT_WALLET_ADDRESS is None:
+        raise ValueError("SELLER_AGENT_WALLET_ADDRESS is not set")
+    if env.SELLER_ENTITY_ID is None:
+        raise ValueError("SELLER_ENTITY_ID is not set")
+
+    def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         nonlocal position_fulfilled_count
 
         # Convert job.phase to ACPJobPhase enum if it's an integer
@@ -57,7 +64,7 @@ def seller():
 
                 if position_fulfilled_count == 0:
                     position_fulfilled_count += 1
-                    time.sleep(10)
+                    time.sleep(20)
                     job.position_fulfilled(
                         PositionFulfilledPayload(
                             symbol="VIRTUAL",
@@ -71,7 +78,7 @@ def seller():
                     )
                     print(f"Job {job.id} VIRTUAL TP fulfilled")
 
-                    time.sleep(10)
+                    time.sleep(20)
                     job.unfulfilled_position(
                         UnfulfilledPositionPayload(
                             symbol="ETH",

@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Optional
 
-from virtuals_acp import ACPMemo, MemoType
+from virtuals_acp import ACPMemo, MemoType, ACPGraduationStatus, ACPOnlineStatus
 from virtuals_acp.client import VirtualsACP
 from virtuals_acp.job import ACPJob
 from virtuals_acp.models import ACPJobPhase, OpenPositionPayload, TPSLConfig, ClosePositionPayload, PayloadType
@@ -17,7 +17,14 @@ load_dotenv(override=True)
 def buyer():
     env = EnvSettings()
 
-    def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo]):
+    if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
+        raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
+    if env.BUYER_AGENT_WALLET_ADDRESS is None:
+        raise ValueError("BUYER_AGENT_WALLET_ADDRESS is not set")
+    if env.BUYER_ENTITY_ID is None:
+        raise ValueError("BUYER_ENTITY_ID is not set")
+
+    def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         if (
                 job.phase == ACPJobPhase.NEGOTIATION
                 and memo_to_sign is not None
@@ -49,7 +56,7 @@ def buyer():
             print(f"Job {job.id} 2 positions opened")
 
             # Buyer open 1 more position
-            time.sleep(10)
+            time.sleep(20)
             job.open_position(
                 [
                     OpenPositionPayload(
@@ -64,17 +71,17 @@ def buyer():
             print(f"Job {job.id} 1 more position opened")
 
             # Buyer starts closing positions on initiative, before TP/SL hit
-            time.sleep(10)
+            time.sleep(20)
             job.close_partial_position(
                 ClosePositionPayload(
                     position_id=0,
-                    amount=1.01
+                    amount=0.00101
                 )
             )
             print(f"Job {job.id} BTC position closed")
 
             # Buyer close job upon all positions return
-            time.sleep(10)
+            time.sleep(20)
             job.close_job()
             print(f"Start closing Job {job.id}")
             return
@@ -145,7 +152,8 @@ def buyer():
     relevant_agents = acp.browse_agents(
         keyword="<your_filter_agent_keyword>",
         cluster="<your_cluster_name>",
-        graduated=True # False for sandbox agents; True for graduated agents
+        graduation_status=ACPGraduationStatus.ALL,
+        online_status=ACPOnlineStatus.ALL,
     )
     print(f"Relevant agents: {relevant_agents}")
 
@@ -161,7 +169,6 @@ def buyer():
     )
 
     print(f"Job {job_id} initiated")
-
     print("Listening for next steps...")
     # Keep the script running to listen for next steps
     threading.Event().wait()

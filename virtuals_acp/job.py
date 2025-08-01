@@ -103,12 +103,7 @@ class ACPJob(BaseModel):
             payload: Optional[GenericPayload[T]] = None,
             reason: Optional[str] = None
     ) -> str:
-        memo = next(
-            (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.NEGOTIATION),
-            None
-        )
-
-        if not memo:
+        if self.latest_memo is None or self.latest_memo.next_phase != ACPJobPhase.NEGOTIATION:
             raise ValueError("No negotiation memo found")
 
         if not reason:
@@ -118,28 +113,18 @@ class ACPJob(BaseModel):
             self.id,
             self.latest_memo.id,
             accept,
-            payload,
+            payload.model_dump_json() if payload else None,
             reason
         )
 
     def deliver(self, deliverable: IDeliverable):
-        memo = next(
-            (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.EVALUATION),
-            None
-        )
-
-        if not memo:
-            raise ValueError("No evaluation memo found")
+        if self.latest_memo is None or self.latest_memo.next_phase != ACPJobPhase.EVALUATION:
+            raise ValueError("No transaction memo found")
 
         return self.acp_client.deliver_job(self.id, deliverable)
 
     def evaluate(self, accept: bool, reason: Optional[str] = None):
-        memo = next(
-            (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.COMPLETED),
-            None
-        )
-
-        if not memo:
+        if self.latest_memo is None or self.latest_memo.next_phase != ACPJobPhase.COMPLETED:
             raise ValueError("No evaluation memo found")
 
         if not reason:

@@ -3,7 +3,7 @@ from typing import Optional, Type
 
 from pydantic import BaseModel, ConfigDict
 
-from virtuals_acp.models import MemoType, PayloadType, GenericPayload
+from virtuals_acp.models import MemoType, PayloadType, GenericPayload, T
 from virtuals_acp.models import ACPJobPhase
 from virtuals_acp.utils import try_parse_json_model, try_validate_model
 

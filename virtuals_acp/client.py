@@ -384,12 +384,13 @@ class VirtualsACP:
             job_id: int,
             memo_id: int,
             accept: bool,
+            content: Optional[str],
             reason: Optional[str] = ""
     ) -> str:
         try:
             data = self.contract_manager.sign_memo(memo_id, accept, reason or "")
             tx_hash = data.get('receipts', [])[0].get('transactionHash')
-            if (not accept):
+            if not accept:
                 exit()
 
             time.sleep(10)
@@ -397,7 +398,7 @@ class VirtualsACP:
             print(f"Responding to job {job_id} with memo {memo_id} and accept {accept} and reason {reason}")
             self.contract_manager.create_memo(
                 job_id,
-                f"{reason if reason else f'Job {job_id} accepted.'}",
+                content or f"Job {job_id} accepted.{f' {reason}' or ''}",
                 MemoType.MESSAGE,
                 is_secured=False,
                 next_phase=ACPJobPhase.TRANSACTION

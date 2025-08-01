@@ -122,41 +122,6 @@ class _ACPContractManager:
         raise Exception("Failed to approve allowance")
 
 
-    def create_payable_fee_memo(
-            self,
-            job_id: int,
-            content: str,
-            amount: int,
-            memo_type: Union[MemoType.PAYABLE_FEE, MemoType.PAYABLE_FEE_REQUEST],
-            next_phase: ACPJobPhase,
-    ) -> Dict[str, Any]:
-        user_op_hash = self._sign_transaction(
-            "createPayableFeeMemo",
-            [job_id, content, amount, memo_type.value, next_phase.value]
-        )
-
-        if user_op_hash is None:
-            raise Exception("Failed to sign transaction - create_payable_fee_memo")
-
-        retries = 3
-        while retries > 0:
-            try:
-                result = self.validate_transaction(user_op_hash)
-
-                if result.get("status") == 200:
-                    return result
-                else:
-                    raise Exception(f"Failed to create payable fee memo")
-            except Exception as e:
-                retries -= 1
-                if retries == 0:
-                    print(f"Error during create_payable_fee_memo: {e}")
-                    raise
-                time.sleep(2 * (3 - retries))
-
-        raise Exception(f"Failed to create payable fee memo")
-
-
     def create_payable_memo(
             self,
             job_id: int,

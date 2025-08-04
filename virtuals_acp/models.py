@@ -1,7 +1,7 @@
 # virtuals_acp/models.py
 
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union, TypeVar, Generic, Literal
 from enum import Enum
 
 from pydantic import BaseModel
@@ -16,6 +16,11 @@ class MemoType(Enum):
     VOICE_URL = 3
     OBJECT_URL = 4
     TXHASH = 5
+    PAYABLE_REQUEST = 6
+    PAYABLE_TRANSFER = 7
+    PAYABLE_FEE = 8
+    PAYABLE_FEE_REQUEST = 9
+
 
 class ACPJobPhase(Enum):
     REQUEST = 0
@@ -25,22 +30,32 @@ class ACPJobPhase(Enum):
     COMPLETED = 4
     REJECTED = 5
     EXPIRED = 6
-    
+
+
+class FeeType(Enum):
+    NO_FEE = 0
+    IMMEDIATE_FEE = 1
+    DEFERRED_FEE = 2
+
+
 class ACPAgentSort(Enum):
     SUCCESSFUL_JOB_COUNT = "successfulJobCount"
-    SUCCESS_RATE = "successRate" 
+    SUCCESS_RATE = "successRate"
     UNIQUE_BUYER_COUNT = "uniqueBuyerCount"
     MINS_FROM_LAST_ONLINE = "minsFromLastOnlineTime"
+
 
 class ACPGraduationStatus(Enum):
     GRADUATED = "graduated"
     NOT_GRADUATED = "not_graduated"
     ALL = "all"
-    
+
+
 class ACPOnlineStatus(Enum):
     ONLINE = "online"
     OFFLINE = "offline"
     ALL = "all"
+
 
 class IDeliverable(BaseModel):
     type: str
@@ -69,3 +84,80 @@ class IACPAgent:
     processing_time: Optional[str] = None
 
 
+class PayloadType(str, Enum):
+    FUND_RESPONSE = "fund_response"
+    OPEN_POSITION = "open_position"
+    CLOSE_POSITION = "close_position"
+    CLOSE_PARTIAL_POSITION = "close_partial_position"
+    POSITION_FULFILLED = "position_fulfilled"
+    CLOSE_JOB_AND_WITHDRAW = "close_job_and_withdraw"
+    UNFULFILLED_POSITION = "unfulfilled_position"
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class GenericPayload(BaseModel, Generic[T]):
+    type: PayloadType
+    data: T | List[T]
+
+
+class FundResponsePayload(BaseModel):
+    reporting_api_endpoint: str
+    wallet_address: Optional[str] = None
+
+
+class TPSLConfig(BaseModel):
+    price: Optional[float] = None
+    percentage: Optional[float] = None
+
+
+class OpenPositionPayload(BaseModel):
+    symbol: str
+    amount: float
+    chain: Optional[str] = None
+    contract_address: Optional[str] = None
+    tp: TPSLConfig
+    sl: TPSLConfig
+
+
+class UpdateTPSLConfig(TPSLConfig):
+    amount_percentage: Optional[float] = None
+
+
+class UpdatePositionPayload(BaseModel):
+    symbol: str
+    contract_address: Optional[str] = None
+    tp: Optional[UpdateTPSLConfig] = None
+    sl: Optional[UpdateTPSLConfig] = None
+
+
+class ClosePositionPayload(BaseModel):
+    position_id: int
+    amount: float
+
+
+class PositionFulfilledPayload(BaseModel):
+    symbol: str
+    amount: float
+    contract_address: str
+    type: Literal["TP", "SL", "CLOSE"]
+    pnl: float
+    entry_price: float
+    exit_price: float
+
+
+class UnfulfilledPositionPayload(BaseModel):
+    symbol: str
+    amount: float
+    contract_address: str
+    type: Literal["ERROR", "PARTIAL"]
+    reason: Optional[str] = None
+
+
+class CloseJobAndWithdrawPayload(BaseModel):
+    message: str
+
+
+class RequestClosePositionPayload(BaseModel):
+    position_id: int

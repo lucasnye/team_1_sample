@@ -1,15 +1,18 @@
 import threading
-import time
+from collections import deque
 from datetime import datetime, timedelta
+from typing import Optional
 
+from dotenv import load_dotenv
+
+from virtuals_acp import ACPMemo
 from virtuals_acp.client import VirtualsACP
+from virtuals_acp.env import EnvSettings
 from virtuals_acp.job import ACPJob
 from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus
-from virtuals_acp.env import EnvSettings
-from dotenv import load_dotenv
-from collections import deque
 
 load_dotenv(override=True)
+
 
 def buyer(use_thread_lock: bool = True):
     env = EnvSettings()
@@ -26,43 +29,44 @@ def buyer(use_thread_lock: bool = True):
     initiate_job_lock = threading.Lock()
     job_event = threading.Event()
 
-    def safe_append_job(job):
+    def safe_append_job(job, memo_to_sign: Optional[ACPMemo] = None):
         if use_thread_lock:
             print(f"[safe_append_job] Acquiring lock to append job {job.id}")
             with job_queue_lock:
                 print(f"[safe_append_job] Lock acquired, appending job {job.id} to queue")
-                job_queue.append(job)
+                job_queue.append((job, memo_to_sign))
         else:
-            job_queue.append(job)
+            job_queue.append((job, memo_to_sign))
 
     def safe_pop_job():
+        """Modified to return both job and memo_to_sign"""
         if use_thread_lock:
             print(f"[safe_pop_job] Acquiring lock to pop job")
             with job_queue_lock:
                 if job_queue:
-                    job = job_queue.popleft()
+                    job, memo_to_sign = job_queue.popleft()
                     print(f"[safe_pop_job] Lock acquired, popped job {job.id}")
-                    return job
+                    return job, memo_to_sign
                 else:
                     print("[safe_pop_job] Queue is empty after acquiring lock")
         else:
             if job_queue:
-                job = job_queue.popleft()
+                job, memo_to_sign = job_queue.popleft()
                 print(f"[safe_pop_job] Popped job {job.id} without lock")
-                return job
+                return job, memo_to_sign
             else:
                 print("[safe_pop_job] Queue is empty (no lock)")
-        return None
+        return None, None
 
     def job_worker():
         while True:
             job_event.wait()
             while True:
-                job = safe_pop_job()
+                job, memo_to_sign = safe_pop_job()
                 if not job:
                     break
                 try:
-                    process_job(job)
+                    process_job(job, memo_to_sign)
                 except Exception as e:
                     print(f"\u274c Error processing job: {e}")
             if use_thread_lock:
@@ -73,9 +77,9 @@ def buyer(use_thread_lock: bool = True):
                 if not job_queue:
                     job_event.clear()
 
-    def on_new_task(job: ACPJob):
+    def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         print(f"[on_new_task] Received job {job.id} (phase: {job.phase})")
-        safe_append_job(job)
+        safe_append_job(job, memo_to_sign)
         job_event.set()
 
     def on_evaluate(job: ACPJob):
@@ -85,7 +89,7 @@ def buyer(use_thread_lock: bool = True):
                 job.evaluate(True)
                 break
 
-    def process_job(job: ACPJob):
+    def process_job(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         if job.phase == ACPJobPhase.NEGOTIATION:
             for memo in job.memos:
                 if memo.next_phase == ACPJobPhase.TRANSACTION:
@@ -122,7 +126,7 @@ def buyer(use_thread_lock: bool = True):
 
     # Pick one of the agents based on your criteria (in this example we just pick the first one)
     chosen_agent = relevant_agents[0]
-    
+
     # Pick one of the service offerings based on your criteria (in this example we just pick the first one)
     chosen_job_offering = chosen_agent.offerings[0]
 
@@ -138,6 +142,7 @@ def buyer(use_thread_lock: bool = True):
 
     print("Listening for next steps...")
     threading.Event().wait()
+
 
 if __name__ == "__main__":
     buyer()

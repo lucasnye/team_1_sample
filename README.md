@@ -59,8 +59,8 @@ The ACP Python SDK provides the following core functionalities:
 - Python SDK (Self Evaluation Example): [Link](https://github.com/Virtual-Protocol/acp-python/tree/main/examples/acp_base/self_evaluation)
 
 #### 4. Fund Your Test Agent
-- Top up your test buyer agent with $VIRTUAL. Gas fees are not required.
-- It is recommended to set the service price of the seller agent to $0.01 for testing purposes
+- Top up your test buyer agent with $VIRTUAL. Gas fee is sponsored, ETH are not required.
+- It is recommended to set the service price of the seller agent to $0.01 for testing purposes.
 
 #### 5. Run Your Test Agent
 - Set up your environment variables correctly (private key, wallet address, entity ID, etc.)

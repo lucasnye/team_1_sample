@@ -3,15 +3,17 @@ from typing import Optional, Type
 
 from pydantic import BaseModel, ConfigDict
 
-from virtuals_acp.models import MemoType, PayloadType, GenericPayload, T
-from virtuals_acp.models import ACPJobPhase
+from virtuals_acp.models import ACPJobPhase, MemoType, PayloadType, GenericPayload, T, ACPMemoStatus
 from virtuals_acp.utils import try_parse_json_model, try_validate_model
+
 
 class ACPMemo(BaseModel):
     id: int
     type: MemoType
     content: str
     next_phase: ACPJobPhase
+    status: ACPMemoStatus
+    signed_reason: Optional[str] = None
     expiry: Optional[datetime] = None
     structured_content: Optional[GenericPayload] = None
 

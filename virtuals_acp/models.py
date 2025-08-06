@@ -9,6 +9,12 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from virtuals_acp.offering import ACPJobOffering
 
+class ACPMemoStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
 class MemoType(Enum):
     MESSAGE = 0
     CONTEXT_URL = 1

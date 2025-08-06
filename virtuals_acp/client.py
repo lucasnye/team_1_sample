@@ -257,11 +257,11 @@ class VirtualsACP:
                     ACPJobOffering(
                         acp_client=self,
                         provider_address=agent_data["walletAddress"],
-                        type=off["name"],
-                        price=off["price"],
-                        requirementSchema=off.get("requirementSchema", None)
+                        name=offering["name"],
+                        price=offering["price"],
+                        requirement_schema=offering.get("requirementSchema", None)
                     )
-                    for off in agent_data.get("offerings", [])
+                    for offering in agent_data.get("offerings", [])
                 ]
 
                 agents.append(IACPAgent(
@@ -283,7 +283,7 @@ class VirtualsACP:
     def initiate_job(
             self,
             provider_address: str,
-            service_requirement: Union[Dict[str, Any], str],
+            service_requirement: ServiceRequirement,
             amount: float,
             evaluator_address: Optional[str] = None,
             expired_at: Optional[datetime] = None
@@ -356,7 +356,7 @@ class VirtualsACP:
 
         self.contract_manager.create_memo(
             job_id,
-            service_requirement if isinstance(service_requirement, str) else json.dumps(service_requirement),
+            service_requirement.model_dump_json(),
             MemoType.MESSAGE,
             is_secured=True,
             next_phase=ACPJobPhase.NEGOTIATION
@@ -367,7 +367,7 @@ class VirtualsACP:
             "jobId": job_id,
             "clientAddress": self.agent_address,
             "providerAddress": provider_address,
-            "description": service_requirement,
+            "description": service_requirement.model_dump_json(),
             "expiredAt": expired_at.astimezone(timezone.utc).isoformat(),
             "evaluatorAddress": evaluator_address
         }
@@ -598,6 +598,8 @@ class VirtualsACP:
                         type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                        status=ACPMemoStatus(memo.get("status")),
+                        signed_reason=memo.get("signedReason"),
                         expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
                     ))
 
@@ -811,11 +813,11 @@ class VirtualsACP:
                 ACPJobOffering(
                     acp_client=self,
                     provider_address=agent_data["walletAddress"],
-                    type=off["name"],
-                    price=off["price"],
-                    requirementSchema=off.get("requirementSchema", None)
+                    name=offering["name"],
+                    price=offering["price"],
+                    requirement_schema=offering.get("requirementSchema", None)
                 )
-                for off in agent_data.get("offerings", [])
+                for offering in agent_data.get("offerings", [])
             ]
 
             return IACPAgent(

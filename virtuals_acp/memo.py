@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Type
+from typing import Optional, Type, Dict, List
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,17 +21,23 @@ class ACPMemo(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.structured_content = try_parse_json_model(self.content, GenericPayload)
+        self.structured_content = try_parse_json_model(self.content, GenericPayload[Dict])
 
     def __str__(self):
-        return f"AcpMemo(id={self.id}, type={self.type}, content={self.content}, next_phase={self.next_phase}, expiry={self.expiry})"
+        return f"AcpMemo({self.model_dump(exclude={'structured_content'})})"
 
     @property
     def payload_type(self) -> Optional[PayloadType]:
         if self.structured_content is not None:
             return self.structured_content.type
 
-    def get_data_as(self, model: Type[T]) -> Optional[T]:
+    def get_data_as(self, model: Type[T]) -> Optional[T | List[T]]:
         if self.structured_content is None:
             return None
-        return try_validate_model(self.structured_content.data, model)
+
+        data = self.structured_content.data
+        if isinstance(data, list):
+            validated = [try_validate_model(i, model) for i in data]
+            return validated[0] if len(validated) == 1 else validated
+        else:
+            return try_validate_model(data, model)

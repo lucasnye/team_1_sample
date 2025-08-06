@@ -8,8 +8,7 @@ from .models import (
     MemoType,
     ACPAgentSort,
     ACPGraduationStatus,
-    ACPOnlineStatus,
-    ServiceRequirement
+    ACPOnlineStatus
 )
 from .configs import (
     ACPContractConfig,
@@ -52,7 +51,6 @@ __all__ = [
     "ACPAgentSort",
     "ACPGraduationStatus",
     "ACPOnlineStatus",
-    "ServiceRequirement",
 ]
 
 __version__ = "0.1.0"

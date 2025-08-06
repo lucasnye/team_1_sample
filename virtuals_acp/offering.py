@@ -4,8 +4,6 @@ from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 from pydantic import BaseModel, field_validator, ConfigDict
 from jsonschema import ValidationError, validate
 
-from virtuals_acp.models import ServiceRequirement
-
 if TYPE_CHECKING:
     from virtuals_acp.client import VirtualsACP
 
@@ -51,10 +49,14 @@ class ACPJobOffering(BaseModel):
             except ValidationError as e:
                 raise ValueError(f"Invalid service requirement: {str(e)}")
 
-        final_service_requirement = ServiceRequirement(
-            name=self.name,
-            requirement=service_requirement
-        )
+        final_service_requirement = {
+            "name": self.name
+        }
+
+        if isinstance(service_requirement, str):
+            final_service_requirement["message"] = service_requirement
+        else:
+            final_service_requirement["serviceRequirement"] = service_requirement
 
         return self.acp_client.initiate_job(
             provider_address=self.provider_address,

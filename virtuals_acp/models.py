@@ -1,10 +1,10 @@
 # virtuals_acp/models.py
-import json
+
 from dataclasses import dataclass, field
 from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union, TypeVar, Generic, Literal
 from enum import Enum
 
-from pydantic import BaseModel, Field, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 if TYPE_CHECKING:
@@ -121,34 +121,6 @@ class PayloadModel(BaseModel):
 
     def __str__(self):
         return f"{self.__class__.__name__}({self.model_dump(by_alias=False)})"
-
-
-class ServiceRequirement(PayloadModel):
-    name: str
-    requirement: Union[str, Dict[str, Any]] = Field(..., exclude=True)
-
-    @computed_field(alias="message")
-    @property
-    def message_out(self) -> Optional[str]:
-        """Output only if requirement is a string"""
-        return self.requirement if isinstance(self.requirement, str) else None
-
-    @computed_field(alias="serviceRequirement")
-    @property
-    def requirement_out(self) -> Optional[Dict[str, Any]]:
-        """Output only if requirement is a dict"""
-        return self.requirement if isinstance(self.requirement, dict) else None
-
-    def model_dump(self, *args, **kwargs):
-        kwargs.setdefault("exclude_none", True)
-        return super().model_dump(*args, **kwargs)
-
-    def model_dump_json(self, *args, **kwargs):
-        kwargs.setdefault("exclude_none", True)
-        return super().model_dump_json(*args, **kwargs)
-
-    def __str__(self):
-        return f"ServiceRequirement({self.model_dump()})"
 
 
 class GenericPayload(PayloadModel, Generic[T]):

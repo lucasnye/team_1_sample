@@ -24,7 +24,7 @@ from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
 from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent, \
-    IDeliverable, FeeType, GenericPayload, T, ACPMemoStatus, ServiceRequirement
+    IDeliverable, FeeType, GenericPayload, T, ACPMemoStatus
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -283,7 +283,7 @@ class VirtualsACP:
     def initiate_job(
             self,
             provider_address: str,
-            service_requirement: ServiceRequirement,
+            service_requirement: Union[Dict[str, Any], str],
             amount: float,
             evaluator_address: Optional[str] = None,
             expired_at: Optional[datetime] = None
@@ -356,7 +356,7 @@ class VirtualsACP:
 
         self.contract_manager.create_memo(
             job_id,
-            service_requirement.model_dump_json(),
+            service_requirement if isinstance(service_requirement, str) else json.dumps(service_requirement),
             MemoType.MESSAGE,
             is_secured=True,
             next_phase=ACPJobPhase.NEGOTIATION
@@ -367,7 +367,7 @@ class VirtualsACP:
             "jobId": job_id,
             "clientAddress": self.agent_address,
             "providerAddress": provider_address,
-            "description": service_requirement.model_dump_json(),
+            "description": service_requirement,
             "expiredAt": expired_at.astimezone(timezone.utc).isoformat(),
             "evaluatorAddress": evaluator_address
         }

@@ -4,6 +4,7 @@ from .models import (
     IDeliverable,
     IACPAgent,
     ACPJobPhase,
+    ACPMemoStatus,
     MemoType,
     ACPAgentSort,
     ACPGraduationStatus,
@@ -32,6 +33,7 @@ __all__ = [
     "IDeliverable",
     "IACPAgent",
     "ACPJobPhase",
+    "ACPMemoStatus",
     "MemoType",
     "ACPJobOffering",
     "ACPContractConfig",
@@ -48,7 +50,7 @@ __all__ = [
     "ACPMemo",
     "ACPAgentSort",
     "ACPGraduationStatus",
-    "ACPOnlineStatus"
+    "ACPOnlineStatus",
 ]
 
 __version__ = "0.1.0"

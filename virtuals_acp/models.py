@@ -4,10 +4,17 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union, TypeVar, Generic, Literal
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 if TYPE_CHECKING:
     from virtuals_acp.offering import ACPJobOffering
+
+class ACPMemoStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
 
 class MemoType(Enum):
     MESSAGE = 0
@@ -97,22 +104,41 @@ class PayloadType(str, Enum):
 T = TypeVar("T", bound=BaseModel)
 
 
-class GenericPayload(BaseModel, Generic[T]):
+class PayloadModel(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        validate_by_name=True
+    )
+
+    # JSON-friendly payload fields when using model_dump and model_dump_json
+    def model_dump(self, *args, **kwargs):
+        kwargs.setdefault("by_alias", True)
+        return super().model_dump(*args, **kwargs)
+
+    def model_dump_json(self, *args, **kwargs):
+        kwargs.setdefault("by_alias", True)
+        return super().model_dump_json(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.model_dump(by_alias=False)})"
+
+
+class GenericPayload(PayloadModel, Generic[T]):
     type: PayloadType
     data: T | List[T]
 
 
-class FundResponsePayload(BaseModel):
+class FundResponsePayload(PayloadModel):
     reporting_api_endpoint: str
     wallet_address: Optional[str] = None
 
 
-class TPSLConfig(BaseModel):
+class TPSLConfig(PayloadModel):
     price: Optional[float] = None
     percentage: Optional[float] = None
 
 
-class OpenPositionPayload(BaseModel):
+class OpenPositionPayload(PayloadModel):
     symbol: str
     amount: float
     chain: Optional[str] = None
@@ -121,23 +147,23 @@ class OpenPositionPayload(BaseModel):
     sl: TPSLConfig
 
 
-class UpdateTPSLConfig(TPSLConfig):
+class UpdateTPSLConfig(PayloadModel):
     amount_percentage: Optional[float] = None
 
 
-class UpdatePositionPayload(BaseModel):
+class UpdatePositionPayload(PayloadModel):
     symbol: str
     contract_address: Optional[str] = None
     tp: Optional[UpdateTPSLConfig] = None
     sl: Optional[UpdateTPSLConfig] = None
 
 
-class ClosePositionPayload(BaseModel):
+class ClosePositionPayload(PayloadModel):
     position_id: int
     amount: float
 
 
-class PositionFulfilledPayload(BaseModel):
+class PositionFulfilledPayload(PayloadModel):
     symbol: str
     amount: float
     contract_address: str
@@ -147,7 +173,7 @@ class PositionFulfilledPayload(BaseModel):
     exit_price: float
 
 
-class UnfulfilledPositionPayload(BaseModel):
+class UnfulfilledPositionPayload(PayloadModel):
     symbol: str
     amount: float
     contract_address: str
@@ -155,9 +181,9 @@ class UnfulfilledPositionPayload(BaseModel):
     reason: Optional[str] = None
 
 
-class CloseJobAndWithdrawPayload(BaseModel):
+class CloseJobAndWithdrawPayload(PayloadModel):
     message: str
 
 
-class RequestClosePositionPayload(BaseModel):
+class RequestClosePositionPayload(PayloadModel):
     position_id: int

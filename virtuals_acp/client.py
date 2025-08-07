@@ -1,11 +1,12 @@
 # virtuals_acp/client.py
+
 import json
 import signal
 import sys
 import threading
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Literal, Optional, Tuple, Union, Dict, Any, Callable
+from typing import List, Optional, Tuple, Union, Dict, Any, Callable
 
 import requests
 import socketio
@@ -16,13 +17,14 @@ from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
 from importlib.metadata import version
+
 from virtuals_acp.configs import ACPContractConfig, DEFAULT_CONFIG
 from virtuals_acp.contract_manager import _ACPContractManager
 from virtuals_acp.exceptions import ACPApiError, ACPError
 from virtuals_acp.job import ACPJob
 from virtuals_acp.memo import ACPMemo
 from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, ACPOnlineStatus, MemoType, IACPAgent, \
-    IDeliverable, FeeType, GenericPayload, T
+    IDeliverable, FeeType, GenericPayload, T, ACPMemoStatus
 from virtuals_acp.offering import ACPJobOffering
 
 
@@ -101,10 +103,12 @@ class VirtualsACP:
         memo_to_sign_id = data.get("memoToSign")
 
         memos = [ACPMemo(
-            id=memo["id"],
-            type=MemoType(int(memo["memoType"])),
-            content=memo["content"],
-            next_phase=memo["nextPhase"],
+            id=memo.get("id"),
+            type=MemoType(int(memo.get("memoType"))),
+            content=memo.get("content"),
+            next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+            status=ACPMemoStatus(memo.get("status")),
+            signed_reason=memo.get("signedReason"),
             expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
         ) for memo in data["memos"]]
 
@@ -137,10 +141,12 @@ class VirtualsACP:
 
     def handle_evaluate(self, data) -> None:
         memos = [ACPMemo(
-            id=memo["id"],
-            type=MemoType(int(memo["memoType"])),
-            content=memo["content"],
-            next_phase=memo["nextPhase"],
+            id=memo.get("id"),
+            type=MemoType(int(memo.get("memoType"))),
+            content=memo.get("content"),
+            next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+            status=ACPMemoStatus(memo.get("status")),
+            signed_reason=memo.get("signedReason"),
             expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
         ) for memo in data["memos"]]
 
@@ -251,11 +257,11 @@ class VirtualsACP:
                     ACPJobOffering(
                         acp_client=self,
                         provider_address=agent_data["walletAddress"],
-                        type=off["name"],
-                        price=off["price"],
-                        requirementSchema=off.get("requirementSchema", None)
+                        name=offering["name"],
+                        price=offering["price"],
+                        requirement_schema=offering.get("requirementSchema", None)
                     )
-                    for off in agent_data.get("offerings", [])
+                    for offering in agent_data.get("offerings", [])
                 ]
 
                 agents.append(IACPAgent(
@@ -592,6 +598,8 @@ class VirtualsACP:
                         type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                        status=ACPMemoStatus(memo.get("status")),
+                        signed_reason=memo.get("signedReason"),
                         expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
                     ))
 
@@ -637,6 +645,8 @@ class VirtualsACP:
                         type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                        status=ACPMemoStatus(memo.get("status")),
+                        signed_reason=memo.get("signedReason"),
                         expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
                     ))
 
@@ -682,6 +692,8 @@ class VirtualsACP:
                         type=MemoType(int(memo.get("memoType"))),
                         content=memo.get("content"),
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                        status=ACPMemoStatus(memo.get("status")),
+                        signed_reason=memo.get("signedReason"),
                         expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
                     ))
 
@@ -728,6 +740,8 @@ class VirtualsACP:
                     type=MemoType(int(memo.get("memoType"))),
                     content=memo.get("content"),
                     next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                    status=ACPMemoStatus(memo.get("status")),
+                    signed_reason=memo.get("signedReason"),
                     expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
                 ))
 
@@ -773,6 +787,8 @@ class VirtualsACP:
                 type=MemoType(int(memo.get("memoType"))),
                 content=memo.get("content"),
                 next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
+                status=ACPMemoStatus(memo.get("status")),
+                signed_reason=memo.get("signedReason"),
                 expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
             )
 
@@ -797,11 +813,11 @@ class VirtualsACP:
                 ACPJobOffering(
                     acp_client=self,
                     provider_address=agent_data["walletAddress"],
-                    type=off["name"],
-                    price=off["price"],
-                    requirementSchema=off.get("requirementSchema", None)
+                    name=offering["name"],
+                    price=offering["price"],
+                    requirement_schema=offering.get("requirementSchema", None)
                 )
-                for off in agent_data.get("offerings", [])
+                for offering in agent_data.get("offerings", [])
             ]
 
             return IACPAgent(

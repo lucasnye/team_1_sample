@@ -53,7 +53,7 @@ def seller():
                 and memo_to_sign.type != MemoType.MESSAGE
         ):
             # open positions for client
-            if memo_to_sign.type == MemoType.PAYABLE_TRANSFER:
+            if memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW:
                 print(f"Accepting positions opening {job} with memo {memo_to_sign.id}")
                 job.respond_open_position(
                     memo_to_sign.id,

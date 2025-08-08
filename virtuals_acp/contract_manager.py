@@ -131,8 +131,8 @@ class _ACPContractManager:
             fee_amount: int,
             fee_type: FeeType,
             next_phase: ACPJobPhase,
-            memo_type: Union[MemoType.PAYABLE_REQUEST, MemoType.PAYABLE_TRANSFER],
-            expired_at: Optional[datetime] = None,
+            memo_type: Union[MemoType.PAYABLE_REQUEST, MemoType.PAYABLE_TRANSFER_ESCROW],
+            expired_at: datetime,
             token: Optional[str] = None
     ) -> Dict[str, Any]:
         receiver_address = Web3.to_checksum_address(receiver_address)
@@ -150,7 +150,7 @@ class _ACPContractManager:
                 fee_type.value,
                 memo_type.value,
                 next_phase.value,
-                math.floor(expired_at.timestamp()) if expired_at else 0
+                math.floor(expired_at.timestamp())
             ]
         )
 

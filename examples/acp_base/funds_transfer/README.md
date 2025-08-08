@@ -147,7 +147,7 @@ def buyer():
         # Accept position opening requests
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER):
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW):
             job.respond_open_position(memo_to_sign.id, True, "accepts position opening")
             return
 
@@ -161,7 +161,7 @@ def buyer():
         # Accept fulfilled position transfers
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.payload_type == PayloadType.POSITION_FULFILLED):
             job.respond_position_fulfilled(memo_to_sign.id, True, "accepts fulfilled position")
             return
@@ -169,7 +169,7 @@ def buyer():
         # Accept unfulfilled position transfers
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.payload_type == PayloadType.UNFULFILLED_POSITION):
             job.respond_unfulfilled_position(memo_to_sign.id, True, "accepts unfulfilled position")
             return
@@ -177,7 +177,7 @@ def buyer():
         # Confirm job closure
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.next_phase == ACPJobPhase.EVALUATION):
             job.confirm_job_closure(memo_to_sign.id, True, "confirms job closure")
             return
@@ -262,7 +262,7 @@ def seller():
         # Accept position opening requests
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER):
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW):
             job.respond_open_position(memo_to_sign.id, True, "accepts position opening")
             return
 

@@ -452,6 +452,7 @@ class VirtualsACP:
             fee_type: FeeType,
             reason: GenericPayload[T],
             next_phase: ACPJobPhase,
+            expired_at: datetime
     ) -> str:
         receiver_address = Web3.to_checksum_address(receiver_address)
 
@@ -463,7 +464,8 @@ class VirtualsACP:
             self.w3.to_wei(fee_amount, "ether"),
             fee_type,
             next_phase,
-            MemoType.PAYABLE_REQUEST
+            MemoType.PAYABLE_REQUEST,
+            expired_at
         )
 
         tx_hash = data.get('receipts', [])[0].get('transactionHash')
@@ -498,7 +500,7 @@ class VirtualsACP:
             fee_type: FeeType,
             reason: GenericPayload[T],
             next_phase: ACPJobPhase,
-            expired_at: Optional[datetime] = None,
+            expired_at: datetime,
     ) -> str:
         amount_in_wei = self.w3.to_wei(amount, "ether")
         fee_amount_in_wei = self.w3.to_wei(fee_amount, "ether")
@@ -515,7 +517,7 @@ class VirtualsACP:
             fee_amount_in_wei,
             fee_type,
             next_phase,
-            MemoType.PAYABLE_TRANSFER,
+            MemoType.PAYABLE_TRANSFER_ESCROW,
             expired_at
         )
         tx_hash = data.get('receipts', [])[0].get('transactionHash')

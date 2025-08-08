@@ -35,7 +35,7 @@ def buyer():
             print(f"Job {job.id} paid")
 
             # Buyer starts opening positions
-            print(f"Opening position {job}")
+            print(f"Job {job.id} opening 2 positions")
             job.open_position(
                 [
                     OpenPositionPayload(
@@ -57,6 +57,7 @@ def buyer():
 
             # Buyer open 1 more position
             time.sleep(20)
+            print(f"Job {job.id} opening 1 more position")
             job.open_position(
                 [
                     OpenPositionPayload(
@@ -72,6 +73,7 @@ def buyer():
 
             # Buyer starts closing positions on initiative, before TP/SL hit
             time.sleep(20)
+            print(f"Job {job.id} closing BTC position")
             job.close_partial_position(
                 ClosePositionPayload(
                     position_id=0,
@@ -82,6 +84,7 @@ def buyer():
 
             # Buyer close job upon all positions return
             time.sleep(20)
+            print(f"Initiating job closing {job.id}")
             job.close_job()
             print(f"Start closing Job {job.id}")
             return
@@ -91,7 +94,7 @@ def buyer():
                 job.phase == ACPJobPhase.TRANSACTION
                 and memo_to_sign is not None
                 and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER
+                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
         ):
             print(f"Accepting funds transfer {job} with memo {memo_to_sign.id}")
             if memo_to_sign.payload_type == PayloadType.UNFULFILLED_POSITION:
@@ -115,7 +118,7 @@ def buyer():
                 job.phase == ACPJobPhase.TRANSACTION
                 and memo_to_sign is not None
                 and memo_to_sign.next_phase == ACPJobPhase.EVALUATION # if phase is evaluation, it means the job is closing
-                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER
+                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
         ):
             print(f"Accepting funds transfer {job} with memo {memo_to_sign.id}")
             job.confirm_job_closure(memo_to_sign.id, True)
@@ -145,7 +148,7 @@ def buyer():
         agent_wallet_address=env.BUYER_AGENT_WALLET_ADDRESS,
         on_new_task=on_new_task,
         on_evaluate=on_evaluate,
-        entity_id=env.BUYER_ENTITY_ID,
+        entity_id=env.BUYER_ENTITY_ID
     )
 
     # Browse available agents based on a keyword and cluster name

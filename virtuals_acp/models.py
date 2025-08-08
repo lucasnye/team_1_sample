@@ -25,8 +25,7 @@ class MemoType(Enum):
     TXHASH = 5
     PAYABLE_REQUEST = 6
     PAYABLE_TRANSFER = 7
-    PAYABLE_FEE = 8
-    PAYABLE_FEE_REQUEST = 9
+    PAYABLE_TRANSFER_ESCROW = 8
 
 
 class ACPJobPhase(Enum):

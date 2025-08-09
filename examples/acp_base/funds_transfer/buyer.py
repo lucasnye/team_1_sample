@@ -26,9 +26,9 @@ def buyer():
 
     def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         if (
-                job.phase == ACPJobPhase.NEGOTIATION
-                and memo_to_sign is not None
-                and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
+            job.phase == ACPJobPhase.NEGOTIATION
+            and memo_to_sign is not None
+            and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
         ):
             print("Paying job", job.id)
             job.pay(job.price)
@@ -91,10 +91,10 @@ def buyer():
 
         # receiving funds transfer from provider for the fulfilled/unfulfilled positions
         elif (
-                job.phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign is not None
-                and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
+            job.phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign is not None
+            and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
         ):
             print(f"Accepting funds transfer {job} with memo {memo_to_sign.id}")
             if memo_to_sign.payload_type == PayloadType.UNFULFILLED_POSITION:
@@ -115,10 +115,10 @@ def buyer():
 
         # receiving funds transfer from provider at closing of the job
         elif (
-                job.phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign is not None
-                and memo_to_sign.next_phase == ACPJobPhase.EVALUATION # if phase is evaluation, it means the job is closing
-                and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
+            job.phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign is not None
+            and memo_to_sign.next_phase == ACPJobPhase.EVALUATION # if phase is evaluation, it means the job is closing
+            and memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW
         ):
             print(f"Accepting funds transfer {job} with memo {memo_to_sign.id}")
             job.confirm_job_closure(memo_to_sign.id, True)

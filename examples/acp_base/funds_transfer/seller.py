@@ -27,12 +27,15 @@ def seller():
     def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         nonlocal position_fulfilled_count
 
+        if memo_to_sign is None:
+            return
+
         # Convert job.phase to ACPJobPhase enum if it's an integer
         # Check if the memo-to-sign's next phase is NEGOTIATION
         if (
-                job.phase == ACPJobPhase.REQUEST
-                and memo_to_sign is not None
-                and memo_to_sign.next_phase == ACPJobPhase.NEGOTIATION
+            job.phase == ACPJobPhase.REQUEST
+            and memo_to_sign is not None
+            and memo_to_sign.next_phase == ACPJobPhase.NEGOTIATION
         ):
             job.respond(
                 True,
@@ -46,11 +49,11 @@ def seller():
             print(f"Job {job.id} responded")
             return
 
-        elif(
-                job.phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign is not None
-                and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign.type != MemoType.MESSAGE
+        elif (
+            job.phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign is not None
+            and memo_to_sign.next_phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign.type != MemoType.MESSAGE
         ):
             # open positions for client
             if memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW:
@@ -106,9 +109,9 @@ def seller():
 
         # closing the job
         elif (
-                job.phase == ACPJobPhase.TRANSACTION
-                and memo_to_sign is not None
-                and memo_to_sign.type == MemoType.MESSAGE
+            job.phase == ACPJobPhase.TRANSACTION
+            and memo_to_sign is not None
+            and memo_to_sign.type == MemoType.MESSAGE
         ):
             if len(job.memos) > 3:
                 print(f"Closing {job} with memo {memo_to_sign.id}")

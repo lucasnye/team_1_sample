@@ -131,7 +131,7 @@ class _ACPContractManager:
             fee_amount: int,
             fee_type: FeeType,
             next_phase: ACPJobPhase,
-            memo_type: Union[MemoType.PAYABLE_REQUEST, MemoType.PAYABLE_TRANSFER_ESCROW],
+            memo_type: MemoType,
             expired_at: datetime,
             token: Optional[str] = None
     ) -> Dict[str, Any]:

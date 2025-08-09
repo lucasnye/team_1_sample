@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -142,6 +142,9 @@ class ACPJob(BaseModel):
         if not payload:
             raise ValueError("No positions to open")
 
+        if expired_at is None:
+            expired_at = datetime.now(timezone.utc) + timedelta(minutes=3)
+
         total_amount = sum(p.amount for p in payload)
 
         open_position_payload = GenericPayload(
@@ -167,7 +170,7 @@ class ACPJob(BaseModel):
             reason: Optional[str] = None,
     ):
         memo = self._get_memo_by_id(memo_id)
-        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER:
+        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER_ESCROW:
             raise ValueError("No open position memo found")
 
         open_position_payload = try_parse_json_model(memo.content, GenericPayload[OpenPositionPayload])
@@ -186,7 +189,11 @@ class ACPJob(BaseModel):
     def close_partial_position(
             self,
             payload: ClosePositionPayload,
+            expired_at: Optional[datetime] = None
     ):
+        if expired_at is None:
+            expired_at = datetime.now(timezone.utc) + timedelta(days=1)
+
         close_position_payload = GenericPayload(
             type=PayloadType.CLOSE_PARTIAL_POSITION,
             data=payload
@@ -199,7 +206,8 @@ class ACPJob(BaseModel):
             0,
             FeeType.NO_FEE,
             close_position_payload,
-            ACPJobPhase.TRANSACTION
+            ACPJobPhase.TRANSACTION,
+            expired_at
         )
 
     def respond_close_partial_position(
@@ -250,7 +258,8 @@ class ACPJob(BaseModel):
             memo_id: int,
             accept: bool,
             payload: ClosePositionPayload,
-            reason: Optional[str] = None
+            reason: Optional[str] = None,
+            expired_at: Optional[datetime] = None
     ):
         memo = self._get_memo_by_id(memo_id)
         if (
@@ -271,6 +280,9 @@ class ACPJob(BaseModel):
         self.acp_client.contract_manager.sign_memo(memo_id, accept, reason)
 
         if accept:
+            if expired_at is None:
+                expired_at = datetime.now(timezone.utc) + timedelta(days=1)
+
             return self.acp_client.transfer_funds(
                 self.id,
                 payload.amount,
@@ -281,7 +293,8 @@ class ACPJob(BaseModel):
                     type=PayloadType.CLOSE_POSITION,
                     data=payload
                 ),
-                ACPJobPhase.TRANSACTION
+                ACPJobPhase.TRANSACTION,
+                expired_at
             )
 
     def confirm_close_position(
@@ -294,7 +307,7 @@ class ACPJob(BaseModel):
         if (
                 memo is None
                 or memo.next_phase != ACPJobPhase.TRANSACTION
-                or memo.type != MemoType.PAYABLE_TRANSFER
+                or memo.type != MemoType.PAYABLE_TRANSFER_ESCROW
         ):
             raise ValueError("No payable transfer memo found")
 
@@ -310,8 +323,12 @@ class ACPJob(BaseModel):
 
     def position_fulfilled(
             self,
-            payload: PositionFulfilledPayload
+            payload: PositionFulfilledPayload,
+            expired_at: Optional[datetime] = None
     ):
+        if expired_at is None:
+            expired_at = datetime.now(timezone.utc) + timedelta(days=1)
+
         position_fulfilled_payload = GenericPayload(
             type=PayloadType.POSITION_FULFILLED,
             data=payload
@@ -324,7 +341,8 @@ class ACPJob(BaseModel):
             0,
             FeeType.NO_FEE,
             position_fulfilled_payload,
-            ACPJobPhase.TRANSACTION
+            ACPJobPhase.TRANSACTION,
+            expired_at
         )
 
     def respond_position_fulfilled(
@@ -334,7 +352,7 @@ class ACPJob(BaseModel):
             reason: Optional[str] = None
     ):
         memo = self._get_memo_by_id(memo_id)
-        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER:
+        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER_ESCROW:
             raise ValueError("No position fulfilled memo found")
 
         position_fulfilled_payload = try_parse_json_model(memo.content, GenericPayload[PositionFulfilledPayload])
@@ -350,7 +368,14 @@ class ACPJob(BaseModel):
             reason
         )
 
-    def unfulfilled_position(self, payload: UnfulfilledPositionPayload):
+    def unfulfilled_position(
+            self,
+            payload: UnfulfilledPositionPayload,
+            expired_at: Optional[datetime] = None
+    ):
+        if expired_at is None:
+            expired_at = datetime.now(timezone.utc) + timedelta(days=1)
+
         unfulfilled_position_payload = GenericPayload(
             type=PayloadType.UNFULFILLED_POSITION,
             data=payload
@@ -363,7 +388,8 @@ class ACPJob(BaseModel):
             0,
             FeeType.NO_FEE,
             unfulfilled_position_payload,
-            ACPJobPhase.TRANSACTION
+            ACPJobPhase.TRANSACTION,
+            expired_at
         )
 
     def respond_unfulfilled_position(
@@ -373,7 +399,7 @@ class ACPJob(BaseModel):
             reason: Optional[str] = None
     ):
         memo = self._get_memo_by_id(memo_id)
-        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER:
+        if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.PAYABLE_TRANSFER_ESCROW:
             raise ValueError("No unfulfilled position memo found")
 
         unfulfilled_position_payload = try_parse_json_model(memo.content, GenericPayload[UnfulfilledPositionPayload])
@@ -409,7 +435,8 @@ class ACPJob(BaseModel):
             memo_id: int,
             accept: bool,
             fulfilled_positions: List[PositionFulfilledPayload],
-            reason: Optional[str] = None
+            reason: Optional[str] = None,
+            expired_at: Optional[datetime] = None
     ):
         memo = self._get_memo_by_id(memo_id)
         if memo is None or memo.next_phase != ACPJobPhase.TRANSACTION or memo.type != MemoType.MESSAGE:
@@ -425,6 +452,9 @@ class ACPJob(BaseModel):
         self.acp_client.sign_memo(memo.id, accept, reason)
 
         if accept:
+            if expired_at is None:
+                expired_at = datetime.now(timezone.utc) + timedelta(days=1)
+
             total_amount = sum(p.amount for p in fulfilled_positions)
             close_job_response_payload = GenericPayload(
                 type=PayloadType.POSITION_FULFILLED,
@@ -438,7 +468,8 @@ class ACPJob(BaseModel):
                 0,
                 FeeType.NO_FEE,
                 close_job_response_payload,
-                ACPJobPhase.COMPLETED
+                ACPJobPhase.COMPLETED,
+                expired_at
             )
 
     def confirm_job_closure(

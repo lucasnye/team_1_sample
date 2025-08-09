@@ -27,9 +27,6 @@ def seller():
     def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         nonlocal position_fulfilled_count
 
-        if memo_to_sign is None:
-            return
-
         # Convert job.phase to ACPJobPhase enum if it's an integer
         # Check if the memo-to-sign's next phase is NEGOTIATION
         if (

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from virtuals_acp.memo import ACPMemo
 from virtuals_acp.models import ACPJobPhase, IACPAgent, IDeliverable, GenericPayload, OpenPositionPayload, PayloadType, \
     ClosePositionPayload, PositionFulfilledPayload, CloseJobAndWithdrawPayload, FeeType, MemoType, \
-    UnfulfilledPositionPayload, RequestClosePositionPayload, T
+    UnfulfilledPositionPayload, RequestClosePositionPayload, NegotiationPayload, T
 from virtuals_acp.utils import try_parse_json_model
 
 if TYPE_CHECKING:
@@ -44,7 +44,43 @@ class ACPJob(BaseModel):
             (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.NEGOTIATION),
             None
         )
-        return memo.content if memo else None
+
+        if not memo:
+            return None
+        
+        if not memo.content:
+            return None
+        
+        content_obj = try_parse_json_model(memo.content, NegotiationPayload)
+
+        if not content_obj:
+            return None
+        
+        if content_obj.service_requirement:
+            return content_obj.service_requirement
+        
+        return content_obj
+    
+    @property
+    def service_name(self) -> Optional[str]:
+        """Get the service name from the negotiation memo"""
+        memo = next(
+            (m for m in self.memos if ACPJobPhase(m.next_phase) == ACPJobPhase.NEGOTIATION),
+            None
+        )
+
+        if not memo:
+            return None
+        
+        if not memo.content:
+            return None
+        
+        content_obj = try_parse_json_model(memo.content, NegotiationPayload)
+
+        if not content_obj:
+            return memo.content
+        
+        return content_obj.name
 
     @property
     def deliverable(self) -> Optional[str]:

@@ -349,6 +349,49 @@ ACP_ABI = [
         "indexed": True,
         "internalType": "uint256",
         "name": "jobId",
+        "type": "uint256",
+      },
+      {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "memoId",
+        "type": "uint256",
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address",
+      },
+      {
+        "indexed": False,
+        "internalType": "address",
+        "name": "token",
+        "type": "address",
+      },
+      {
+        "indexed": False,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256",
+      },
+      {
+        "indexed": False,
+        "internalType": "uint256",
+        "name": "feeAmount",
+        "type": "uint256",
+      },
+    ],
+    "name": "PayableFundsEscrowed",
+    "type": "event",
+  },
+  {
+    "anonymous": False,
+    "inputs": [
+      {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "jobId",
         "type": "uint256"
       },
       {
@@ -1283,6 +1326,25 @@ ACP_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "jobPayment",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
@@ -1660,7 +1722,20 @@ ACP_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
-  }
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "memoId",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawEscrowedFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
 ]
 
 ERC20_ABI = [

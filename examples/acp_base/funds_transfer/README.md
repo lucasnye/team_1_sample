@@ -147,7 +147,7 @@ def buyer():
         # Accept position opening requests
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER):
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW):
             job.respond_open_position(memo_to_sign.id, True, "accepts position opening")
             return
 
@@ -161,7 +161,7 @@ def buyer():
         # Accept fulfilled position transfers
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.payload_type == PayloadType.POSITION_FULFILLED):
             job.respond_position_fulfilled(memo_to_sign.id, True, "accepts fulfilled position")
             return
@@ -169,7 +169,7 @@ def buyer():
         # Accept unfulfilled position transfers
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.payload_type == PayloadType.UNFULFILLED_POSITION):
             job.respond_unfulfilled_position(memo_to_sign.id, True, "accepts unfulfilled position")
             return
@@ -177,7 +177,7 @@ def buyer():
         # Confirm job closure
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER and
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW and
               memo_to_sign.next_phase == ACPJobPhase.EVALUATION):
             job.confirm_job_closure(memo_to_sign.id, True, "confirms job closure")
             return
@@ -262,7 +262,7 @@ def seller():
         # Accept position opening requests
         elif (job.phase == ACPJobPhase.TRANSACTION and 
               memo_to_sign is not None and 
-              memo_to_sign.type == MemoType.PAYABLE_TRANSFER):
+              memo_to_sign.type == MemoType.PAYABLE_TRANSFER_ESCROW):
             job.respond_open_position(memo_to_sign.id, True, "accepts position opening")
             return
 
@@ -317,8 +317,18 @@ if __name__ == "__main__":
 > **Important:**
 > Your seller agent **must** provide a working `reportingApiEndpoint` in the payload when responding to a job request. This endpoint allows buyers to monitor their positions in real time.
 >
-> The endpoint should return a JSON object with the following schema:
->
+> 
+> **Schema Update Requirements (Position Lifecycle)**
+> 
+> When implementing your `reportingApiEndpoint`, your agent must accurately update `openPositions` and `historicalPositions` according to the trade execution flow:
+> 1. Client calls `openPosition`
+> 2. Your trading logic adds the position to `openPositions` in the schema with status = "pending".
+> 3. Agent calls `responseOpenPosition`.
+> 4. After attempted trade execution:
+>   - If trade execution is successful → Keep the position in `openPositions` but update status = "open".
+>   - If trade execution fails → Move the position to `historicalPositions` with status = "unfulfilled" and call `unfulfilledPosition`.
+> 
+
 > ##### Example Schema for `reportingApiEndpoint` (getPositions)
 >
 > ```json
@@ -400,7 +410,7 @@ if __name__ == "__main__":
 >}
 > ```
 >
-> - `description` and `historicalPositions` are optional fields.
+> - **Note**: `description` and `historicalPositions` are optional fields, but you **must** include them when applicable (e.g., on failed trades).
 > - This endpoint is critical for buyers to monitor their portfolio and open/close positions in real time.
 
 ---

@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional, TYPE_CHECKING, Dict, Union, TypeVar, Generic, Literal
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import Field, BaseModel, ConfigDict
+from pydantic.aliases import AliasChoices
 from pydantic.alias_generators import to_camel
 
 if TYPE_CHECKING:
@@ -125,6 +126,15 @@ class PayloadModel(BaseModel):
 class GenericPayload(PayloadModel, Generic[T]):
     type: PayloadType
     data: T | List[T]
+
+
+class NegotiationPayload(PayloadModel):
+    name: Optional[str] = None
+    service_requirement: Optional[Union[str, Dict[str, Any]]] = Field(
+        default=None,
+        validation_alias=AliasChoices("serviceRequirement", "service_requirement", "message"),
+    )
+    model_config = ConfigDict(extra="allow")
 
 
 class FundResponsePayload(PayloadModel):

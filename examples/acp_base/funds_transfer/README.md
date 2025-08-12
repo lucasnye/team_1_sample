@@ -512,7 +512,7 @@ job.unfulfilled_position(
 
 ## ⚠️ Important Notes
 
-- **Token**: Only $VIRTUAL supported (enforced by SDK)
+- **Token**: Only $USDC supported (enforced by SDK)
 - **Security**: All flows are agent-mediated, never EOA-based
 - **Tracking**: All transfers tied to JobID for auditability
 - **Position IDs**: Each position gets a unique ID for tracking

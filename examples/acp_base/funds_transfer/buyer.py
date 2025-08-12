@@ -40,18 +40,18 @@ def buyer():
                 [
                     OpenPositionPayload(
                         symbol="BTC",
-                        amount=0.001, # amount in $VIRTUAL
+                        amount=0.001, # amount in $USDC
                         tp=TPSLConfig(percentage=5),
                         sl=TPSLConfig(percentage=2),
                     ),
                     OpenPositionPayload(
                         symbol="ETH",
-                        amount=0.002, # amount in $VIRTUAL
+                        amount=0.002, # amount in $USDC
                         tp=TPSLConfig(percentage=5),
                         sl=TPSLConfig(percentage=2),
                     ),
                 ],
-                0.001 # fee amount in $VIRTUAL
+                0.001 # fee amount in $USDC
             )
             print(f"Job {job.id} 2 positions opened")
 
@@ -62,7 +62,7 @@ def buyer():
                 [
                     OpenPositionPayload(
                         symbol="VIRTUAL",
-                        amount=0.003, # amount in $VIRTUAL
+                        amount=0.003, # amount in $USDC
                         tp=TPSLConfig(percentage=33000),
                         sl=TPSLConfig(percentage=2),
                     )

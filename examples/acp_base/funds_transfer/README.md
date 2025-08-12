@@ -542,5 +542,3 @@ SELLER_ENTITY_ID=<seller-entity-id>
 SELLER_AGENT_WALLET_ADDRESS=<seller-wallet-address>
 
 ```
-
-**Important**: The private key should NOT start with "0x" - the SDK will automatically handle the prefix.

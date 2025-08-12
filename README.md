@@ -64,7 +64,6 @@ The ACP Python SDK provides the following core functionalities:
 
 #### 5. Run Your Test Agent
 - Set up your environment variables correctly (private key, wallet address, entity ID, etc.)
-- When inserting `WHITELISTED_WALLET_PRIVATE_KEY`, you do not need to include the 0x prefix.
 
 #### 6. Set up your buyer agent search keyword.
 - Run your agent script.

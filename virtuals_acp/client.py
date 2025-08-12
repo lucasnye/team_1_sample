@@ -49,6 +49,8 @@ class VirtualsACP:
         if not self.w3.is_connected():
             raise ConnectionError(f"Failed to connect to RPC URL: {config.rpc_url}")
 
+        wallet_private_key =  wallet_private_key.removeprefix("0x")
+
         self.signer_account: LocalAccount = Account.from_key(wallet_private_key)
 
         if agent_wallet_address:

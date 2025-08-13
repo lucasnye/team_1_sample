@@ -111,7 +111,7 @@ class VirtualsACP:
             next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
             status=ACPMemoStatus(memo.get("status")),
             signed_reason=memo.get("signedReason"),
-            expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+            expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
         ) for memo in data["memos"]]
 
         memo_to_sign = next(
@@ -149,7 +149,7 @@ class VirtualsACP:
             next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
             status=ACPMemoStatus(memo.get("status")),
             signed_reason=memo.get("signedReason"),
-            expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+            expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
         ) for memo in data["memos"]]
 
         context = data["context"]
@@ -596,7 +596,7 @@ class VirtualsACP:
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                         status=ACPMemoStatus(memo.get("status")),
                         signed_reason=memo.get("signedReason"),
-                        expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+                        expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
                     ))
 
                 context = job.get("context")
@@ -643,7 +643,7 @@ class VirtualsACP:
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                         status=ACPMemoStatus(memo.get("status")),
                         signed_reason=memo.get("signedReason"),
-                        expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+                        expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
                     ))
 
                 context = job.get("context")
@@ -690,7 +690,7 @@ class VirtualsACP:
                         next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                         status=ACPMemoStatus(memo.get("status")),
                         signed_reason=memo.get("signedReason"),
-                        expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+                        expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
                     ))
 
                 context = job.get("context")
@@ -738,7 +738,7 @@ class VirtualsACP:
                     next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                     status=ACPMemoStatus(memo.get("status")),
                     signed_reason=memo.get("signedReason"),
-                    expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+                    expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
                 ))
 
             context = data.get("data", {}).get("context")
@@ -785,7 +785,7 @@ class VirtualsACP:
                 next_phase=ACPJobPhase(int(memo.get("nextPhase"))),
                 status=ACPMemoStatus(memo.get("status")),
                 signed_reason=memo.get("signedReason"),
-                expiry=datetime.fromtimestamp(int(memo["expiry"]) / 1000) if memo.get("expiry") else None
+                expiry=datetime.fromtimestamp(int(memo["expiry"])) if memo.get("expiry") else None
             )
 
         except Exception as e:

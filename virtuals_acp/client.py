@@ -296,6 +296,9 @@ class VirtualsACP:
 
         eval_addr = Web3.to_checksum_address(evaluator_address) if evaluator_address else self.agent_address
 
+        if provider_address == self.agent_address:
+            raise Exception("You cannot initiate a job with yourself as the provider")
+
         job_id = None
         retry_count = 3
         retry_delay = 3

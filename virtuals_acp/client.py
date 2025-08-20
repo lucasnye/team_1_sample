@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 from datetime import datetime, timezone, timedelta
+from importlib.metadata import version
 from typing import List, Optional, Tuple, Union, Dict, Any, Callable
 
 import requests
@@ -15,8 +16,6 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
-
-from importlib.metadata import version
 
 from virtuals_acp.configs import ACPContractConfig, DEFAULT_CONFIG
 from virtuals_acp.contract_manager import _ACPContractManager
@@ -49,7 +48,7 @@ class VirtualsACP:
         if not self.w3.is_connected():
             raise ConnectionError(f"Failed to connect to RPC URL: {config.rpc_url}")
 
-        wallet_private_key =  wallet_private_key.removeprefix("0x")
+        wallet_private_key = wallet_private_key.removeprefix("0x")
 
         self.signer_account: LocalAccount = Account.from_key(wallet_private_key)
 
@@ -341,7 +340,7 @@ class VirtualsACP:
                 #     job_id = int(data.get("result").get("jobId"))
 
                 # if job_id is not None and job_id != "":
-                #     break  
+                #     break
 
             except Exception as e:
                 if (attempt == retry_count - 1):
@@ -400,7 +399,7 @@ class VirtualsACP:
             data = self.contract_manager.sign_memo(memo_id, accept, reason or "")
             tx_hash = data.get('receipts', [])[0].get('transactionHash')
             if not accept:
-                exit()
+                return tx_hash
 
             time.sleep(10)
 
@@ -672,7 +671,7 @@ class VirtualsACP:
             raise ACPApiError(f"Failed to get completed jobs: {e}")
 
     def get_cancelled_jobs(self, page: int = 1, pageSize: int = 10) -> List["ACPJob"]:
-        url = f"{self.acp_api_url}/jobs/cancelled?pagination[page]=${page}&pagination[pageSize]=${pageSize}"
+        url = f"{self.acp_api_url}/jobs/cancelled?pagination[page]={page}&pagination[pageSize]={pageSize}"
         headers = {
             "wallet-address": self.agent_address
         }

@@ -13,7 +13,7 @@ from virtuals_acp.models import ACPAgentSort, ACPJobPhase, ACPGraduationStatus, 
 
 load_dotenv(override=True)
 
-
+ 
 def buyer(use_thread_lock: bool = True):
     env = EnvSettings()
 
@@ -113,12 +113,12 @@ def buyer(use_thread_lock: bool = True):
 
     # Browse available agents based on a keyword and cluster name
     relevant_agents = acp.browse_agents(
-        keyword="<your_filter_agent_keyword>",
-        cluster="<your_cluster_name>",
+        keyword="startup researcher",
+        cluster=None,
         sort_by=[
             ACPAgentSort.SUCCESSFUL_JOB_COUNT,
         ],
-        top_k=5,
+        top_k=1,
         graduation_status=ACPGraduationStatus.ALL,
         online_status=ACPOnlineStatus.ALL
     )
@@ -134,7 +134,7 @@ def buyer(use_thread_lock: bool = True):
         job_id = chosen_job_offering.initiate_job(
             # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
             # Reference: (./images/specify_requirement_toggle_switch.png)
-            service_requirement={"<your_schema_field>": "Help me to generate a flower meme."},
+            service_requirement={"Company Name": "OpenAI"},
             evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
             expired_at=datetime.now() + timedelta(days=1)
         )

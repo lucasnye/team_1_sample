@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from collections import deque
@@ -5,14 +6,38 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
+# -----------------------------
+# 1) Load .env and HARD-OVERRIDE to Sepolia
+# -----------------------------
+load_dotenv(override=True)
+
+# Force Sepolia env for this process (cannot be overridden by defaults)
+os.environ["CHAIN_ENV"] = "base-sepolia"
+os.environ["CHAIN_ID"] = "84532"
+
+# If you already have a Sepolia RPC in .env it will be used; otherwise fallback here.
+if not os.getenv("RPC_URL"):
+    os.environ["RPC_URL"] = "https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>"
+os.environ["BASE_SEPOLIA_RPC_URL"] = os.environ["RPC_URL"]
+
+# Nuke possible mainnet fallbacks some SDK builds sniff
+for k in ("BASE_MAINNET_RPC_URL", "MAINNET_RPC_URL", "BASE_RPC_URL"):
+    os.environ.pop(k, None)
+
 from virtuals_acp import VirtualsACP, ACPJob, ACPJobPhase, ACPMemo, IDeliverable
 from virtuals_acp.env import EnvSettings
-
-load_dotenv(override=True)
 
 
 def seller(use_thread_lock: bool = True):
     env = EnvSettings()
+
+    # -----------------------------
+    # Debug what the SDK actually read
+    # -----------------------------
+    print("DEBUG CHAIN_ENV :", getattr(env, "CHAIN_ENV", None))
+    print("DEBUG CHAIN_ID  :", getattr(env, "CHAIN_ID", None))
+    print("DEBUG RPC_URL   :", getattr(env, "RPC_URL", None) or getattr(env, "BASE_SEPOLIA_RPC_URL", None))
+    print("DEBUG ACP_API_URL:", getattr(env, "ACP_API_URL", None))
 
     if env.WHITELISTED_WALLET_PRIVATE_KEY is None:
         raise ValueError("WHITELISTED_WALLET_PRIVATE_KEY is not set")
@@ -60,7 +85,6 @@ def seller(use_thread_lock: bool = True):
                 job, memo_to_sign = safe_pop_job()
                 if not job:
                     break
-                # Process each job in its own thread to avoid blocking
                 threading.Thread(target=handle_job_with_delay, args=(job, memo_to_sign), daemon=True).start()
             if use_thread_lock:
                 with job_queue_lock:
@@ -75,7 +99,7 @@ def seller(use_thread_lock: bool = True):
             process_job(job, memo_to_sign)
             time.sleep(2)
         except Exception as e:
-            print(f"\u274c Error processing job: {e}")
+            print(f"❌ Error processing job: {e}")
 
     def on_new_task(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         print(f"[on_new_task] Received job {job.id} (phase: {job.phase})")
@@ -84,21 +108,18 @@ def seller(use_thread_lock: bool = True):
 
     def process_job(job: ACPJob, memo_to_sign: Optional[ACPMemo] = None):
         if (
-                job.phase == ACPJobPhase.REQUEST and
-                memo_to_sign is not None and
-                memo_to_sign.next_phase == ACPJobPhase.NEGOTIATION
+            job.phase == ACPJobPhase.REQUEST and
+            memo_to_sign is not None and
+            memo_to_sign.next_phase == ACPJobPhase.NEGOTIATION
         ):
             job.respond(True)
         elif (
-                job.phase == ACPJobPhase.TRANSACTION and
-                memo_to_sign is not None and
-                memo_to_sign.next_phase == ACPJobPhase.EVALUATION
+            job.phase == ACPJobPhase.TRANSACTION and
+            memo_to_sign is not None and
+            memo_to_sign.next_phase == ACPJobPhase.EVALUATION
         ):
             print(f"Delivering job {job.id}")
-            deliverable = IDeliverable(
-                type="url",
-                value="https://example.com"
-            )
+            deliverable = IDeliverable(type="url", value="https://example.com")
             job.deliver(deliverable)
         elif job.phase == ACPJobPhase.COMPLETED:
             print("Job completed", job)
@@ -107,7 +128,7 @@ def seller(use_thread_lock: bool = True):
 
     threading.Thread(target=job_worker, daemon=True).start()
 
-    # Initialize the ACP client
+    # Initialize the ACP client (now guaranteed to use Sepolia)
     VirtualsACP(
         wallet_private_key=env.WHITELISTED_WALLET_PRIVATE_KEY,
         agent_wallet_address=env.SELLER_AGENT_WALLET_ADDRESS,

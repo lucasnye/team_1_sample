@@ -2,9 +2,9 @@
 dist/
 
 # Virtual environments
-venv/
-.venv/
-.venv_*/
+#venv/
+#.venv/
+#.venv_*/
 
 # pyenv local version
 .python-version
@@ -14,7 +14,7 @@ __pycache__/
 *.py[cod]
 
 # Environment variables
-.env
+#.env
 
 # macOS system files
 .DS_Store

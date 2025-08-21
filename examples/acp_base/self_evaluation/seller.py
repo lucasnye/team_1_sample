@@ -2,6 +2,9 @@ import threading
 import time
 from collections import deque
 from typing import Optional
+import json
+from parser import parse_proposal
+from report import *
 
 from dotenv import load_dotenv
 
@@ -95,9 +98,49 @@ def seller(use_thread_lock: bool = True):
                 memo_to_sign.next_phase == ACPJobPhase.EVALUATION
         ):
             print(f"Delivering job {job.id}")
+
+            buyer_text = job.service_requirement.get("Company Name", "")
+            startup = parse_proposal(buyer_text)
+            context = {
+                "peer_companies": [
+                    {
+                        "company_name": "MedFlow",
+                        "industry": "HealthTech",
+                        "subsector": "Clinic Management",
+                        "stage": "Series A",
+                        "hq_location": "Boston, MA",
+                        "business_model": "B2B SaaS",
+                        "markets": ["North America"],
+                        "moat": "Exclusive partnerships with major EHR providers",
+                        "go_to_market": "Channel partners and medical distributors",
+                        "tech_stack": ["Java", "React", "MongoDB"],
+                        "description": "End-to-end clinic management suite with integrated billing.",
+                        "keywords": ["clinic SaaS", "EHR", "workflow"],
+                        "profitability": "not yet profitable",
+                        "growth_rate": 0.25
+                    },
+                    {
+                        "company_name": "ClinicAI",
+                        "industry": "HealthTech",
+                        "subsector": "Patient Engagement",
+                        "stage": "Series B",
+                        "hq_location": "New York, NY",
+                        "business_model": "B2B SaaS",
+                        "markets": ["North America", "Asia"],
+                        "moat": "First-mover advantage with regulatory certifications",
+                        "go_to_market": "Hybrid inbound and outbound sales",
+                        "description": "Automated patient follow-up and appointment scheduling.",
+                        "keywords": ["patient engagement", "automation", "health SaaS"],
+                        "profitability": "break-even",
+                        "growth_rate": 0.3
+                    }
+                ]
+            }
+            generated_report = generate_report(startup, context)
+
             deliverable = IDeliverable(
-                type="url",
-                value="https://example.com"
+                type="String",
+                value=generated_report
             )
             job.deliver(deliverable)
         elif job.phase == ACPJobPhase.COMPLETED:

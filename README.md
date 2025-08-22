@@ -58,8 +58,11 @@ git clone https://github.com/yourusername/vc-mastermind.git
 cd vc-mastermind
 
 # Create virtual environment
+
 python3.12 -m venv venv
+
 source venv/bin/activate   # On Mac/Linux
+
 venv\Scripts\activate      # On Windows
 
 # Install dependencies

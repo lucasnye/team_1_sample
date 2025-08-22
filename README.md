@@ -70,9 +70,9 @@ pip install -r requirements.txt
 
 ▶️ Usage
 
-Add your API keys to a .env file:
+Add your API keys to a .env file(format given in .env.example):
 
-GENAI_API_KEY=your_key_here
+eg: GENAI_API_KEY=your_key_here
 
 
 Run the agent:
@@ -84,7 +84,7 @@ python seller.py
 python buyer.py
 
 
-Input a startup proposal summary.
+Input a startup proposal summary in the service_requirements object of buyer.py:
 
 Receive a PDF report with insights, benchmarks, and recommendations.
 

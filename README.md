@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 # ▶️ Usage
 
-Add your API keys to a .env file:
+Add your API keys to a .env file(given an example in .env.example of self_evaluation folder):
 
 GENAI_API_KEY=your_key_here
 

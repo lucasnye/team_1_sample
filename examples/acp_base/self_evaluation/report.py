@@ -18,22 +18,24 @@ def build_prompt(startup_data: dict, context_data: dict) -> str:
     context_json = json.dumps(context_data, indent=2)
 
     prompt = f"""
-You are an experienced startup analyst.
-Generate a profitability assessment report using ONLY the provided data.
-Do not invent numbers. If information is missing, describe qualitative factors instead.
+Generate a profitability assessment report in markdown format with these exact headings:
+# Executive Summary
+
+# Industry Context
+
+# Peer Benchmarking
+
+# Profitability Outlook
+
+# Key Risks and Recommendations
+
+Use ONLY the provided data:
 
 Startup data:
 {startup_json}
 
 Context data (similar companies, industry trends):
 {context_json}
-
-Write the report in this structure:
-1. Executive Summary
-2. Industry Context
-3. Peer Benchmarking
-4. Profitability Outlook (qualitative if numeric data missing)
-5. Key Risks and Recommendations
 """
     return prompt.strip()
 

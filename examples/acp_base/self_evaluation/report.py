@@ -8,7 +8,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
-model = genai.GenerativeModel(model_name = "gemini-2.5-flash", system_instruction=os.getenv("SYSTEM_INSTRUCTIONS"))
+model = genai.GenerativeModel(model_name = "gemini-2.5-flash")
 
 def build_prompt(startup_data: dict, context_data: dict) -> str:
     """

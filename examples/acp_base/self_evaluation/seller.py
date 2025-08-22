@@ -5,6 +5,10 @@ from typing import Optional
 import json
 from parser import parse_proposal
 from report import *
+from markdown_pdf import MarkdownPdf, Section
+import requests
+import boto3
+
 
 from dotenv import load_dotenv
 
@@ -13,6 +17,17 @@ from virtuals_acp.env import EnvSettings
 
 load_dotenv(override=True)
 
+
+def upload_pdf_to_s3(file_path, bucket_name, object_name, aws_access_key, aws_secret_key, region="us-east-1"):
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        region_name=region
+    )
+    s3.upload_file(file_path, bucket_name, object_name, ExtraArgs={'ACL': 'public-read'})
+    url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{object_name}"
+    return url
 
 def seller(use_thread_lock: bool = True):
     env = EnvSettings()
@@ -137,10 +152,21 @@ def seller(use_thread_lock: bool = True):
                 ]
             }
             generated_report = generate_report(startup, context)
+            pdf = MarkdownPdf(toc_level=2, optimize=True)
+            pdf.add_section(Section(generated_report))
+            pdf.save("Profitability_Report.pdf")
+
+            pdf_url = upload_pdf_to_s3(
+                "Profitability_Report.pdf",
+                bucket_name="virtualsprotocolbucket",
+                object_name=f"reports/Profitability_Report_{job.id}.pdf",
+                aws_access_key="AKIAWMJELNR7KPAPQQ62",
+                aws_secret_key=env.AWS_SECRET_KEY
+            )
 
             deliverable = IDeliverable(
                 type="String",
-                value=generated_report
+                value=f"Report generated. Download PDF: {pdf_url}\n\n{generated_report}"
             )
             job.deliver(deliverable)
         elif job.phase == ACPJobPhase.COMPLETED:

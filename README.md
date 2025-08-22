@@ -34,7 +34,7 @@ Potential red flags
 
 Actionable recommendations
 
-🛠 Tech Stack
+# 🛠 Tech Stack
 
 Language: Python 3.12
 

@@ -19,7 +19,7 @@ from virtuals_acp.env import EnvSettings
 load_dotenv(override=True)
 
 
-def upload_pdf_to_s3(file_path, bucket_name, object_name, aws_access_key, aws_secret_key, region="us-east-1"):
+def upload_pdf_to_s3(file_path, bucket_name, object_name, aws_access_key, aws_secret_key, region="ap-southeast-1"):
     s3 = boto3.client(
         "s3",
         aws_access_key_id=aws_access_key,
@@ -163,7 +163,8 @@ def seller(use_thread_lock: bool = True):
                 bucket_name="virtualsprotocolbucket",
                 object_name=f"reports/Profitability_Report_{job.id}.pdf",
                 aws_access_key="AKIAWMJELNR7KPAPQQ62",
-                aws_secret_key=os.getenv("AWS_SECRET_KEY")
+                aws_secret_key=os.getenv("AWS_SECRET_KEY"),
+                region="ap-southeast-1"  # <-- Set your bucket's region here
             )
 
             deliverable = IDeliverable(

@@ -115,7 +115,7 @@ def seller(use_thread_lock: bool = True):
         ):
             print(f"Delivering job {job.id}")
 
-            buyer_text = job.service_requirement.get("Company Name", "")
+            buyer_text = job.service_requirement.get("Company Summary", "")
             startup = parse_proposal(buyer_text)
             context = {
                 "peer_companies": [

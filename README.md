@@ -1,4 +1,4 @@
-VC Mastermind
+# VC Mastermind Virtuals Agent
 
 VC Mastermind is an AI-driven agent that empowers venture capitalists to evaluate potential investments with speed and confidence.
 By automating due diligence, it benchmarks startups against historically successful companies, highlighting success probability, red flags, and actionable recommendations.

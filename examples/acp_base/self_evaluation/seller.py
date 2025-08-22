@@ -169,7 +169,7 @@ def seller(use_thread_lock: bool = True):
 
             deliverable = IDeliverable(
                 type="String",
-                value=f"Report generated. Download PDF: {pdf_url}\n\n{generated_report}"
+                value=f"Report generated. Download PDF: {pdf_url}"
             )
             job.deliver(deliverable)
         elif job.phase == ACPJobPhase.COMPLETED:

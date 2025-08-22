@@ -133,7 +133,7 @@ def buyer(use_thread_lock: bool = True):
         job_id = chosen_job_offering.initiate_job(
             # <your_schema_field> can be found in your ACP Visualiser's "Edit Service" pop-up.
             # Reference: (./images/specify_requirement_toggle_switch.png)
-            service_requirement={"Company Name": "OpenAI"},
+            service_requirement={"Company Name": "IntakeAI is a HealthTech startup based in San Francisco, operating in the clinical workflow automation space. We’re building an AI-powered intake platform that automates patient onboarding and pre-diagnosis questionnaires for mid-sized clinics. As a seed-stage B2B SaaS company, our go-to-market strategy focuses on direct sales to clinics in North America and Europe, where administrative bottlenecks are slowing care delivery. Our competitive advantage lies in proprietary patient-intake NLP models tailored to healthcare regulatory requirements, and our tech stack—built on Python, TensorFlow, and PostgreSQL—enables scalable deployments. We’ve positioned ourselves with strong domain keywords: healthcare AI, automation, and clinical SaaS. We’re seeking guidance on refining our business model, identifying potential strategic partners, and assessing our long-term profitability outlook relative to peer companies. We’ve compiled context on other HealthTech SaaS players (ClinicAI, MedFlow) and want to understand how our positioning compares and what milestones we should prioritize to attract Series A investment."},
             evaluator_address=env.BUYER_AGENT_WALLET_ADDRESS,
             expired_at=datetime.now() + timedelta(days=1)
         )

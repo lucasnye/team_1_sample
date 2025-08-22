@@ -18,7 +18,16 @@ def build_prompt(startup_data: dict, context_data: dict) -> str:
     context_json = json.dumps(context_data, indent=2)
 
     prompt = f"""
-Generate a profitability assessment report in markdown format with these exact headings:
+You are a senior startup analyst writing an investor-grade profitability assessment.
+Your task: produce a clear, objective, and concise narrative report.
+
+### Strict instructions:
+- Use ONLY the data provided.
+- Do NOT fabricate numbers or details.
+- If information is missing, provide a qualitative discussion instead of guessing.
+- Follow EXACTLY the markdown structure below. No extra headings or text outside these sections.
+
+The report must contain these exact top-level markdown headings:
 # Executive Summary
 
 # Industry Context
@@ -29,15 +38,16 @@ Generate a profitability assessment report in markdown format with these exact h
 
 # Key Risks and Recommendations
 
-Use ONLY the provided data:
-
-Startup data:
+Startup data (analyze this company):
 {startup_json}
 
-Context data (similar companies, industry trends):
+Context data (peer companies, industry trends):
 {context_json}
+
+Write as if for experienced investors: professional, analytical tone, no fluff.
 """
     return prompt.strip()
+
 
 
 def generate_report(startup_data: dict, context_data: dict) -> str:
